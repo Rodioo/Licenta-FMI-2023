@@ -1,4 +1,4 @@
-package com.antonio_falcescu.licenta
+package com.antoniofalcescu.licenta
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

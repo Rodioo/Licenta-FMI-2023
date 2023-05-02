@@ -1,4 +1,4 @@
-package com.antonio_falcescu.licenta
+package com.antoniofalcescu.licenta
 
 import org.junit.Test
 

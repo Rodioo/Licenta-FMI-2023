@@ -1,18 +1,24 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'androidx.navigation.safeargs.kotlin'
 }
 
 android {
-    namespace 'com.antonio_falcescu.licenta'
+    namespace 'com.antoniofalcescu.licenta'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.antonio_falcescu.licenta"
+        applicationId "com.antoniofalcescu.licenta"
         minSdk 27
         targetSdk 33
         versionCode 1
         versionName "1.0"
+
+        manifestPlaceholders = [
+                redirectHostName: 'com.antoniofalcescu.licenta://callback',
+                redirectSchemeName: 'com.antoniofalcescu.licenta://callback'
+        ]
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -30,9 +36,18 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    dataBinding {
+        enabled = true
+    }
+
 }
 
 dependencies {
+
+    //Spotify
+    implementation files('libs/spotify-app-remote-release-0.7.2.aar')
+    implementation "com.google.code.gson:gson:2.9.0"
+    implementation ('com.spotify.android:auth:2.0.0')
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
@@ -41,4 +56,24 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    //ViewModel
+    implementation "androidx.lifecycle:lifecycle-extensions:$viewmodel_version"
+
+    //Navigation
+    implementation "androidx.navigation:navigation-fragment-ktx:$navigation_version"
+    implementation "androidx.navigation:navigation-ui-ktx:$navigation_version"
+
+    //Moshi
+    implementation "com.squareup.moshi:moshi:$moshi_version"
+    implementation "com.squareup.moshi:moshi-kotlin:$moshi_version"
+
+    //Retrofit
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-scalars:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
+
+    //Coroutines
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
 }

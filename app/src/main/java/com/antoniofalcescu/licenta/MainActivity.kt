@@ -1,9 +1,11 @@
-package com.antonio_falcescu.licenta
+package com.antoniofalcescu.licenta
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import com.spotify.android.appremote.api.SpotifyAppRemote
 
 class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
