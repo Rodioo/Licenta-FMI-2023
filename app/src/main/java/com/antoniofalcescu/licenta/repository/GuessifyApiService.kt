@@ -1,11 +1,11 @@
 package com.antoniofalcescu.licenta.repository
 
+import com.antoniofalcescu.licenta.profile.Profile
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import retrofit2.Call
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Header
 
@@ -16,14 +16,13 @@ private val moshi = Moshi.Builder()
     .build()
 
 private val retrofit = Retrofit.Builder()
-    .addConverterFactory(ScalarsConverterFactory.create())
+    .addConverterFactory(MoshiConverterFactory.create(moshi))
     .baseUrl(BASE_URL)
     .build()
 
 interface GuessifyApiService {
-
     @GET(value= "me")
-    fun getCurrentUserProfile(@Header("Authorization") accessToken: String): Call<String>
+    suspend fun getCurrentUserProfile(@Header("Authorization") accessToken: String): Response<Profile>
 }
 
 object GuessifyApi {

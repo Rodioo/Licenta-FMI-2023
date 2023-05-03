@@ -11,17 +11,17 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import com.antoniofalcescu.licenta.R
 import com.antoniofalcescu.licenta.databinding.FragmentLoginBinding
-import com.antoniofalcescu.licenta.repository.GuessifyApi
 import com.spotify.sdk.android.auth.*
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 private const val clientId = "dd13ee5f82ce43d0a607b3ebc1f2de91"
 private const val redirectUri = "com.antoniofalcescu.licenta://callback"
 
+//TODO: implement view model to profile fragment and also handle the request there
+//TODO: design the xml layout
+//TODO: add a basic bottom navigation
 class LoginFragment : Fragment() {
 
     private lateinit var binding: FragmentLoginBinding
@@ -58,21 +58,7 @@ class LoginFragment : Fragment() {
             when (response.type) {
                 AuthorizationResponse.Type.TOKEN -> {
                     accessToken = response.accessToken
-                    Log.e("success", "1")
-                    Log.e("token_auth", response.accessToken)
-                    GuessifyApi.retrofitService.getCurrentUserProfile("Bearer $accessToken").enqueue(object:
-                        Callback<String> {
-                        override fun onResponse(call: Call<String>, response: Response<String>) {
-                            Log.e("ceva", response.code().toString())
-                            Log.e("ceva", response.body().toString())
-                        }
-
-                        override fun onFailure(call: Call<String>, t: Throwable) {
-                            Log.e("ceva", t.toString())
-                        }
-
-                    })
-
+                    view?.findNavController()?.navigate(LoginFragmentDirections.actionLoginFragmentToProfileFragment(accessToken))
                 }
                 AuthorizationResponse.Type.ERROR -> {
                     Log.e("token_auth", response.error)
