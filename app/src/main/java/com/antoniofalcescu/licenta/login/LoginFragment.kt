@@ -19,8 +19,6 @@ import com.spotify.sdk.android.auth.*
 private const val clientId = "dd13ee5f82ce43d0a607b3ebc1f2de91"
 private const val redirectUri = "com.antoniofalcescu.licenta://callback"
 
-//TODO: implement view model to profile fragment and also handle the request there
-//TODO: design the xml layout
 //TODO: add a basic bottom navigation
 class LoginFragment : Fragment() {
 
