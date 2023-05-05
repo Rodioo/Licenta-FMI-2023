@@ -12,7 +12,7 @@ import com.antoniofalcescu.licenta.profile.ProfileViewModel
 class TracksAdapter(
     private val viewModel: ProfileViewModel,
     private val onItemClick: (String) -> Unit
-    ): ListAdapter<TrackItem, TracksAdapter.ViewHolder>(DiffCallback) {
+    ): ListAdapter<TrackItem?, TracksAdapter.ViewHolder>(DiffCallback) {
 
     class ViewHolder(private var binding: TrackItemViewBinding): RecyclerView.ViewHolder(binding.root) {
         val trackView = binding.trackView
@@ -23,7 +23,7 @@ class TracksAdapter(
         }
     }
 
-    companion object DiffCallback: DiffUtil.ItemCallback<TrackItem>() {
+    companion object DiffCallback: DiffUtil.ItemCallback<TrackItem?>() {
         override fun areItemsTheSame(oldItem: TrackItem, newItem: TrackItem): Boolean {
             return oldItem == newItem
         }
@@ -40,10 +40,14 @@ class TracksAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val trackItem = getItem(position)
 
-        holder.bind(trackItem)
+        if (trackItem != null) {
+            holder.bind(trackItem)
+        }
 
         holder.trackView.setOnClickListener {
-            onItemClick(trackItem.external_urls.spotify)
+            if (trackItem != null) {
+                onItemClick(trackItem.external_urls.spotify)
+            }
         }
     }
 }

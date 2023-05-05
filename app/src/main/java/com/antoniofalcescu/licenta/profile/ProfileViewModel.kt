@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.antoniofalcescu.licenta.profile.artists.Artist
+import com.antoniofalcescu.licenta.profile.currentlyPlayingTrack.CurrentlyPlayingTrack
 import com.antoniofalcescu.licenta.profile.recentlyPlayedTracks.RecentlyPlayedTrack
 import com.antoniofalcescu.licenta.profile.tracks.Track
 import com.antoniofalcescu.licenta.repository.GuessifyApi
@@ -31,11 +32,16 @@ class ProfileViewModel(val accessToken: String): ViewModel() {
     val recentlyPlayed: LiveData<RecentlyPlayedTrack>
         get() = _recentlyPlayed
 
+    private val _currentTrack = MutableLiveData<CurrentlyPlayingTrack>()
+    val currentTrack: LiveData<CurrentlyPlayingTrack>
+        get() = _currentTrack
+
     init {
         getCurrentUserProfile()
         getCurrentUserTopTracks()
         getCurrentUserTopArtists()
         getCurrentUserRecentlyPlayedTracks()
+        getCurrentUserCurrentlyPlayingTrack()
     }
 
     private fun getCurrentUserProfile() {
@@ -94,6 +100,24 @@ class ProfileViewModel(val accessToken: String): ViewModel() {
                     Log.e("getCurrentUserRecentlyPlayedTracks_FAILURE", response.code().toString())
                     Log.e("getCurrentUserRecentlyPlayedTracks_FAILURE", response.errorBody().toString())
                 }
+            }
+        }
+    }
+
+    private fun getCurrentUserCurrentlyPlayingTrack() {
+        coroutineScope.launch {
+            while(true) {
+                val response = GuessifyApi.retrofitService.getCurrentUserCurrentlyPlayingTrack("Bearer $accessToken")
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        Log.e("getCurrentUserCurrentlyPlayedTrack_SUCCESS", response.body().toString())
+                        _currentTrack.value = response.body()
+                    } else {
+                        Log.e("getCurrentUserCurrentlyPlayedTrack_FAILURE", response.code().toString())
+                        Log.e("getCurrentUserCurrentlyPlayedTrack_FAILURE", response.errorBody().toString())
+                    }
+                }
+                delay(3000L)
             }
         }
     }

@@ -3,6 +3,7 @@ package com.antoniofalcescu.licenta.repository
 import com.antoniofalcescu.licenta.profile.Profile
 import com.antoniofalcescu.licenta.profile.recentlyPlayedTracks.RecentlyPlayedTrack
 import com.antoniofalcescu.licenta.profile.artists.Artist
+import com.antoniofalcescu.licenta.profile.currentlyPlayingTrack.CurrentlyPlayingTrack
 import com.antoniofalcescu.licenta.profile.tracks.Track
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -45,6 +46,11 @@ interface GuessifyApiService {
         @Header("Authorization") accessToken: String,
         @Query("limit") limit: Int = 30
     ): Response<RecentlyPlayedTrack>
+
+    @GET(value= "me/player/currently-playing")
+    suspend fun getCurrentUserCurrentlyPlayingTrack(
+        @Header("Authorization") accessToken: String,
+    ): Response<CurrentlyPlayingTrack>
 }
 
 object GuessifyApi {

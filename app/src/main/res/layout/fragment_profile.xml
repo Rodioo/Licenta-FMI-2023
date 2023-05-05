@@ -109,10 +109,60 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/currently_playing_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/extra_large_margin"
+                    android:layout_marginTop="@dimen/medium_margin"
+                    android:text="Currently Playing on Spotify"
+                    android:textSize="@dimen/big_text"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/current_track_view"
+                    android:layout_height="@dimen/track_image_size"
+                    android:layout_width="wrap_content"
+                    android:layout_marginTop="@dimen/small_margin"
+                    android:layout_marginStart="@dimen/medium_margin"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="@dimen/track_image_size"
+                        android:layout_height="match_parent"
+                        app:roundedImageUrl="@{viewModel.currentTrack.item.album.images[0].url}"
+                        tools:srcCompat="@drawable/loading_animation" />
+
+                    <LinearLayout
+                        android:layout_height="match_parent"
+                        android:layout_width="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginStart="@dimen/small_margin"
+                        >
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@{viewModel.currentTrack.item.name.substring(0, Math.min(30, viewModel.currentTrack.item.name.length()))}"
+                            android:textSize="@dimen/medium_text"
+                            android:textStyle="bold"
+                            android:layout_marginTop="@dimen/extra_small_margin"
+                            />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@{viewModel.currentTrack.item.artists[0].name}"
+                            android:textSize="@dimen/small_text"
+                            android:layout_marginTop="@dimen/extra_small_margin"
+                            />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
                     android:id="@+id/top_tracks_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/extra_large_margin"
+                    android:layout_marginTop="@dimen/medium_margin"
                     android:text="@string/top_tracks_4_weeks"
                     android:textSize="@dimen/big_text"
                     android:textStyle="bold" />
