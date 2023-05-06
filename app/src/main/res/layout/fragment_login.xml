@@ -13,7 +13,7 @@
             style="@style/button"
             android:text="@string/sign_in"
             android:drawableStart="@drawable/spotify"
-            android:drawablePadding="8dp"
+            android:drawablePadding="@dimen/button_drawable_padding"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"

@@ -3,6 +3,7 @@ package com.antoniofalcescu.licenta.profile
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -77,6 +78,12 @@ class ProfileFragment : Fragment() {
             openSpotifyLink(viewModel.profile.value!!.external_urls.spotify)
         }
 
+        binding.currentlyPlayingImage.setOnClickListener {
+            openSpotifyLink(viewModel.currentTrack.value!!.item!!.external_urls.spotify)
+        }
+
+        updateUI()
+
         return binding.root
     }
 
@@ -90,6 +97,64 @@ class ProfileFragment : Fragment() {
         } else {
             val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(spotifyUrl))
             startActivity(webIntent)
+        }
+    }
+
+    private fun updateUI() {
+        fun updateProfileVisibility(isVisible: Boolean) {
+            binding.profileView.visibility = if(isVisible) View.VISIBLE else View.GONE
+        }
+
+        fun updateLoadingVisibility(isVisible: Boolean) {
+            binding.profileLoading.visibility = if(isVisible) View.VISIBLE else View.GONE
+            binding.separator.visibility = if(isVisible) View.GONE else View.VISIBLE
+            binding.scrollView.visibility = if(isVisible) View.GONE else View.VISIBLE
+
+        }
+
+        fun updateCurrentlyPlayingVisibility(isVisible: Boolean) {
+            binding.currentlyPlayingText.visibility = if(isVisible) View.VISIBLE else View.GONE
+            binding.currentTrackView.visibility = if(isVisible) View.VISIBLE else View.GONE
+        }
+
+        fun updateTopTracksVisibility(isVisible: Boolean) {
+            binding.topTracksText.visibility = if(isVisible) View.VISIBLE else View.GONE
+            binding.topTracksRecycler.visibility = if(isVisible) View.VISIBLE else View.GONE
+        }
+
+        fun updateTopArtistsVisibility(isVisible: Boolean) {
+            binding.topArtistsText.visibility = if(isVisible) View.VISIBLE else View.GONE
+            binding.topArtistsRecycler.visibility = if(isVisible) View.VISIBLE else View.GONE
+        }
+
+        fun updateRecentlyPlayedTracksVisibility(isVisible: Boolean) {
+            binding.recentlyPlayedText.visibility = if(isVisible) View.VISIBLE else View.GONE
+            binding.recentlyPlayedRecycler.visibility = if(isVisible) View.VISIBLE else View.GONE
+        }
+
+        viewModel.profile.observe(viewLifecycleOwner) { profile ->
+            updateProfileVisibility(profile != null)
+            updateLoadingVisibility(profile == null)
+        }
+
+        viewModel.currentTrack.observe(viewLifecycleOwner) { currentTrack ->
+            if (currentTrack == null || currentTrack.emptyResponse != null) {
+                updateCurrentlyPlayingVisibility(false)
+            } else {
+                updateCurrentlyPlayingVisibility(true)
+            }
+        }
+
+        viewModel.track.observe(viewLifecycleOwner) { track ->
+            updateTopTracksVisibility(track != null)
+        }
+
+        viewModel.artist.observe(viewLifecycleOwner) { artist ->
+            updateTopArtistsVisibility(artist != null)
+        }
+
+        viewModel.recentlyPlayed.observe(viewLifecycleOwner) { recentTracks ->
+            updateRecentlyPlayedTracksVisibility(recentTracks != null)
         }
     }
 }

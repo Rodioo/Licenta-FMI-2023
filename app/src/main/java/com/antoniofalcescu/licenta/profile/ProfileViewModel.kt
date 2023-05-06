@@ -11,7 +11,7 @@ import com.antoniofalcescu.licenta.profile.tracks.Track
 import com.antoniofalcescu.licenta.repository.GuessifyApi
 import kotlinx.coroutines.*
 
-class ProfileViewModel(val accessToken: String): ViewModel() {
+class ProfileViewModel(private val accessToken: String): ViewModel() {
 
     private var viewModelJob: Job = Job()
     private var coroutineScope: CoroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)

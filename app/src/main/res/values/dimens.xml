@@ -10,13 +10,15 @@
     <!-- Button -->
     <dimen name="button_radius">18dp</dimen>
     <dimen name="button_padding">14dp</dimen>
-    <dimen name="button_max_width_size">196dp</dimen>
+    <dimen name="button_drawable_padding">8dp</dimen>
+
 
     <!-- Image Sizes -->
     <dimen name="recently_played_track_image_size">64dp</dimen>
     <dimen name="track_image_size">96dp</dimen>
     <dimen name="profile_image_size">112dp</dimen>
     <dimen name="country_flag_size">24dp</dimen>
+    <dimen name="loading_image_size">196dp</dimen>
 
     <!-- Text Sizes -->
     <dimen name="extra_small_text">10sp</dimen>
