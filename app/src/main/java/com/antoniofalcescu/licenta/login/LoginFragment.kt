@@ -11,6 +11,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import com.antoniofalcescu.licenta.R
 import com.antoniofalcescu.licenta.databinding.FragmentLoginBinding
@@ -19,19 +20,22 @@ import com.spotify.sdk.android.auth.*
 private const val clientId = "dd13ee5f82ce43d0a607b3ebc1f2de91"
 private const val redirectUri = "com.antoniofalcescu.licenta://callback"
 
-//TODO: add a basic bottom navigation
 class LoginFragment : Fragment() {
 
     private lateinit var binding: FragmentLoginBinding
+    private lateinit var viewModel: LoginViewModel
+    private lateinit var viewModelFactory: LoginViewModelFactory
 
-    private lateinit var accessToken: String
     private lateinit var launcher: ActivityResultLauncher<Intent>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_login, container, false)
+
+        viewModelFactory = LoginViewModelFactory(this.requireActivity().application)
+        viewModel = ViewModelProvider(this, viewModelFactory)[LoginViewModel::class.java]
 
         launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             handleLoginResult(result)
@@ -44,7 +48,7 @@ class LoginFragment : Fragment() {
         return binding.root
     }
 
-    private fun spotifyLogin() {
+    fun spotifyLogin() {
         val request = getAuthenticationRequest()
         val loginIntent = AuthorizationClient.createLoginActivityIntent(activity, request)
         launcher.launch(loginIntent)
@@ -55,8 +59,8 @@ class LoginFragment : Fragment() {
             val response = AuthorizationClient.getResponse(result.resultCode, result.data)
             when (response.type) {
                 AuthorizationResponse.Type.TOKEN -> {
-                    accessToken = response.accessToken
-                    view?.findNavController()?.navigate(LoginFragmentDirections.actionLoginFragmentToProfileFragment(accessToken))
+                    viewModel.saveAccessToken(response.accessToken)
+                    view?.findNavController()?.navigate(LoginFragmentDirections.actionLoginFragmentToProfileFragment())
                 }
                 AuthorizationResponse.Type.ERROR -> {
                     Log.e("token_auth", response.error)

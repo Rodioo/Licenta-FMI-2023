@@ -1,20 +1,28 @@
 package com.antoniofalcescu.licenta.profile
 
+import android.app.Application
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.antoniofalcescu.licenta.profile.artists.Artist
 import com.antoniofalcescu.licenta.profile.currentlyPlayingTrack.CurrentlyPlayingTrack
 import com.antoniofalcescu.licenta.profile.recentlyPlayedTracks.RecentlyPlayedTrack
 import com.antoniofalcescu.licenta.profile.tracks.Track
 import com.antoniofalcescu.licenta.repository.GuessifyApi
+import com.antoniofalcescu.licenta.repository.accessToken.AccessToken
+import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDao
+import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDatabase
 import kotlinx.coroutines.*
 
-class ProfileViewModel(private val accessToken: String): ViewModel() {
+class ProfileViewModel(application: Application): AndroidViewModel(application) {
 
     private var viewModelJob: Job = Job()
     private var coroutineScope: CoroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
+    private val dbScope: CoroutineScope = CoroutineScope(viewModelJob + Dispatchers.IO)
+
+    private val accessTokenDao: AccessTokenDao
+    private lateinit var accessToken: AccessToken
 
     private val _profile = MutableLiveData<Profile>()
     val profile: LiveData<Profile>
@@ -37,16 +45,28 @@ class ProfileViewModel(private val accessToken: String): ViewModel() {
         get() = _currentTrack
 
     init {
-        getCurrentUserProfile()
-        getCurrentUserTopTracks()
-        getCurrentUserTopArtists()
-        getCurrentUserRecentlyPlayedTracks()
-        getCurrentUserCurrentlyPlayingTrack()
+        val db = AccessTokenDatabase.getInstance(application)
+        accessTokenDao = db.accessTokenDao
+
+        coroutineScope.launch {
+            accessToken = getAccessToken()
+            getCurrentUserProfile()
+            getCurrentUserTopTracks()
+            getCurrentUserTopArtists()
+            getCurrentUserRecentlyPlayedTracks()
+            getCurrentUserCurrentlyPlayingTrack()
+        }
+    }
+
+    private suspend fun getAccessToken(): AccessToken {
+        return withContext(dbScope.coroutineContext) {
+            accessTokenDao.get()
+        }
     }
 
     private fun getCurrentUserProfile() {
         coroutineScope.launch {
-            val response = GuessifyApi.retrofitService.getCurrentUserProfile("Bearer $accessToken")
+            val response = GuessifyApi.retrofitService.getCurrentUserProfile("Bearer ${accessToken.value}")
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Log.e("getCurrentUserProfile_SUCCESS", response.body().toString())
@@ -61,7 +81,7 @@ class ProfileViewModel(private val accessToken: String): ViewModel() {
 
     private fun getCurrentUserTopTracks() {
         coroutineScope.launch {
-            val response = GuessifyApi.retrofitService.getCurrentUserTopTracks("Bearer $accessToken")
+            val response = GuessifyApi.retrofitService.getCurrentUserTopTracks("Bearer ${accessToken.value}")
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Log.e("getCurrentUserTopTracks_SUCCESS", response.body().toString())
@@ -76,7 +96,7 @@ class ProfileViewModel(private val accessToken: String): ViewModel() {
 
     private fun getCurrentUserTopArtists() {
         coroutineScope.launch {
-            val response = GuessifyApi.retrofitService.getCurrentUserTopArtists("Bearer $accessToken")
+            val response = GuessifyApi.retrofitService.getCurrentUserTopArtists("Bearer ${accessToken.value}")
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Log.e("getCurrentUserTopArtists_SUCCESS", response.body().toString())
@@ -104,7 +124,7 @@ class ProfileViewModel(private val accessToken: String): ViewModel() {
                     _recentlyPlayed.value = response.body()
                 } else {
                     Log.e("getCurrentUserRecentlyPlayedTracks_FAILURE", response.code().toString())
-                    Log.e("getCurrentUserRecentlyPlayedTracks_FAILURE", response.errorBody().toString())
+                    Log.e("getCurrentUserRecentlyPlayedTracks_FAILURE", response.body().toString())
                 }
             }
         }
@@ -113,7 +133,7 @@ class ProfileViewModel(private val accessToken: String): ViewModel() {
     private fun getCurrentUserCurrentlyPlayingTrack() {
         coroutineScope.launch {
             while(true) {
-                val response = GuessifyApi.retrofitService.getCurrentUserCurrentlyPlayingTrack("Bearer $accessToken")
+                val response = GuessifyApi.retrofitService.getCurrentUserCurrentlyPlayingTrack("Bearer ${accessToken.value}")
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful) {
                         Log.e("getCurrentUserCurrentlyPlayedTrack_SUCCESS", response.body().toString())

@@ -33,9 +33,7 @@ class ProfileFragment : Fragment() {
     ): View? {
         binding = FragmentProfileBinding.inflate(inflater)
 
-        viewModelFactory = ProfileViewModelFactory(
-            ProfileFragmentArgs.fromBundle(requireArguments()).accessToken
-        )
+        viewModelFactory = ProfileViewModelFactory(this.requireActivity().application)
         viewModel = ViewModelProvider(this, viewModelFactory)[ProfileViewModel::class.java]
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
