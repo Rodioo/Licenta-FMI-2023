@@ -7,4 +7,8 @@
     <string name="top_tracks_4_weeks">Top 20 tracks past 4 weeks</string>
     <string name="top_artists_4_weeks">Top 20 artists past 4 weeks</string>
     <string name="recently_played_on_spotify">Recently played on Spotify</string>
+    <string name="for_you">For You</string>
+    <string name="home">Home</string>
+    <string name="profile">Profile</string>
+    <string name="currently_playing_on_spotify">Currently Playing on Spotify</string>
 </resources>

@@ -44,7 +44,8 @@ interface GuessifyApiService {
     @GET(value= "me/player/recently-played")
     suspend fun getCurrentUserRecentlyPlayedTracks(
         @Header("Authorization") accessToken: String,
-        @Query("limit") limit: Int = 30
+        @Query("after") afterTimestamp: Long,
+        @Query("limit") limit: Int = 40
     ): Response<RecentlyPlayedTrack>
 
     @GET(value= "me/player/currently-playing")

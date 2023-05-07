@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_loginFragment_to_profileFragment"
             app:destination="@id/profileFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
     </fragment>
     <fragment
         android:id="@+id/profileFragment"
@@ -23,4 +26,14 @@
             android:name="accessToken"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.antoniofalcescu.licenta.home.HomeFragment"
+        android:label="fragment_home"
+        tools:layout="@layout/fragment_home" />
+    <fragment
+        android:id="@+id/recommendationsFragment"
+        android:name="com.antoniofalcescu.licenta.recommendations.RecommendationsFragment"
+        android:label="fragment_recommendations"
+        tools:layout="@layout/fragment_recommendations" />
 </navigation>

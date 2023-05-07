@@ -18,7 +18,6 @@ import com.antoniofalcescu.licenta.utils.RecyclerViewSpacing
 import com.antoniofalcescu.licenta.utils.Spacing
 import com.antoniofalcescu.licenta.utils.getSpacing
 
-
 class ProfileFragment : Fragment() {
 
     private lateinit var binding: FragmentProfileBinding

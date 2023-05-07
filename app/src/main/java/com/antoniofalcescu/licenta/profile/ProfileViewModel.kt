@@ -90,8 +90,14 @@ class ProfileViewModel(private val accessToken: String): ViewModel() {
     }
 
     private fun getCurrentUserRecentlyPlayedTracks() {
+        val dayInMilliseconds = 24 * 60 * 60 * 1000
+        val afterTimestamp = System.currentTimeMillis() - dayInMilliseconds
+
         coroutineScope.launch {
-            val response = GuessifyApi.retrofitService.getCurrentUserRecentlyPlayedTracks("Bearer $accessToken")
+            val response = GuessifyApi.retrofitService.getCurrentUserRecentlyPlayedTracks(
+                "Bearer $accessToken",
+                afterTimestamp = afterTimestamp
+            )
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Log.e("getCurrentUserRecentlyPlayedTracks_SUCCESS", response.body().toString())
