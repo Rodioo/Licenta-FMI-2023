@@ -7,8 +7,16 @@
     <string name="top_tracks_4_weeks">Top 20 tracks past 4 weeks</string>
     <string name="top_artists_4_weeks">Top 20 artists past 4 weeks</string>
     <string name="recently_played_on_spotify">Recently played on Spotify</string>
-    <string name="for_you">For You</string>
+    <string name="discover">Discover</string>
     <string name="home">Home</string>
     <string name="profile">Profile</string>
     <string name="currently_playing_on_spotify">Currently Playing on Spotify</string>
+    <string name="play_sample">Play Sample</string>
+    <string name="discover_next_song">Discover your next song to keep on repeat</string>
+    <string name="discover_based_on_tracks">Discover new music based on 3 of your favorite tracks</string>
+    <string name="discover_based_on_artists">Discover new music based on 3 of your favorite artists</string>
+    <string name="based_on_these_tracks">Based on these tracks:</string>
+    <string name="based_on_these_artists">Based on these artists:</string>
+    <string name="we_think_you_like">We think you\'d like:</string>
+    <string name="discover_again">Discover again</string>
 </resources>

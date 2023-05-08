@@ -15,6 +15,7 @@ import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDao
 import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDatabase
 import kotlinx.coroutines.*
 
+//TODO: Look for a way to reduce the workload on the UI thread
 class ProfileViewModel(application: Application): AndroidViewModel(application) {
 
     private var viewModelJob: Job = Job()
@@ -32,6 +33,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     val track: LiveData<Track>
         get() = _track
 
+
     private val _artist = MutableLiveData<Artist>()
     val artist: LiveData<Artist>
         get() = _artist
@@ -45,11 +47,12 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
         get() = _currentTrack
 
     init {
-        val db = AccessTokenDatabase.getInstance(application)
-        accessTokenDao = db.accessTokenDao
+        accessTokenDao = AccessTokenDatabase.getInstance(application).accessTokenDao
 
         coroutineScope.launch {
-            accessToken = getAccessToken()
+            if (!(::accessToken.isInitialized) || accessToken.value == null) {
+                accessToken = getAccessToken()
+            }
             getCurrentUserProfile()
             getCurrentUserTopTracks()
             getCurrentUserTopArtists()
@@ -112,10 +115,11 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     private fun getCurrentUserRecentlyPlayedTracks() {
         val dayInMilliseconds = 24 * 60 * 60 * 1000
         val afterTimestamp = System.currentTimeMillis() - dayInMilliseconds
+        Log.e("recentlyPlayed", afterTimestamp.toString())
 
         coroutineScope.launch {
             val response = GuessifyApi.retrofitService.getCurrentUserRecentlyPlayedTracks(
-                "Bearer $accessToken",
+                "Bearer ${accessToken.value}",
                 afterTimestamp = afterTimestamp
             )
             withContext(Dispatchers.Main) {
@@ -124,7 +128,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
                     _recentlyPlayed.value = response.body()
                 } else {
                     Log.e("getCurrentUserRecentlyPlayedTracks_FAILURE", response.code().toString())
-                    Log.e("getCurrentUserRecentlyPlayedTracks_FAILURE", response.body().toString())
+                    Log.e("getCurrentUserRecentlyPlayedTracks_FAILURE", response.body()?.error.toString())
                 }
             }
         }
@@ -143,7 +147,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
                         Log.e("getCurrentUserCurrentlyPlayedTrack_FAILURE", response.errorBody().toString())
                     }
                 }
-                delay(3000L)
+                delay(5_000L)
             }
         }
     }

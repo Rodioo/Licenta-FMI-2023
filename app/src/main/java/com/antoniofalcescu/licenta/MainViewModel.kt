@@ -23,12 +23,13 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
 
 
     init {
-        val db = AccessTokenDatabase.getInstance(application)
-        accessTokenDao = db.accessTokenDao
+        accessTokenDao = AccessTokenDatabase.getInstance(application).accessTokenDao
 
-        coroutineScope.launch {
-            val token = getAccessToken()
-            _accessToken.postValue(token)
+        if (_accessToken.value == null) {
+            coroutineScope.launch {
+                val token = getAccessToken()
+                _accessToken.postValue(token)
+            }
         }
     }
 
@@ -37,4 +38,9 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
             accessTokenDao.get()
         }
     }
+
+    fun restoreAccessToken(accessToken: AccessToken?) {
+        _accessToken.value = accessToken!!
+    }
+
 }

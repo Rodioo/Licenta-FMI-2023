@@ -12,7 +12,8 @@ data class TrackItem(
     val artists: List<ArtistInfo>,
     val id: String,
     val name: String,
-    val external_urls: SpotifyUrl
+    val external_urls: SpotifyUrl,
+    val preview_url: String?
 )
 
 data class AlbumInfo(
@@ -20,5 +21,6 @@ data class AlbumInfo(
 )
 
 data class ArtistInfo(
+    val id: String,
     val name: String
 )

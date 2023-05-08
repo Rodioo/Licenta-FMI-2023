@@ -1,5 +1,6 @@
 package com.antoniofalcescu.licenta.repository
 
+import com.antoniofalcescu.licenta.discover.DiscoverTrack
 import com.antoniofalcescu.licenta.profile.Profile
 import com.antoniofalcescu.licenta.profile.recentlyPlayedTracks.RecentlyPlayedTrack
 import com.antoniofalcescu.licenta.profile.artists.Artist
@@ -32,13 +33,13 @@ interface GuessifyApiService {
     @GET(value= "me/top/tracks")
     suspend fun getCurrentUserTopTracks(
         @Header("Authorization") accessToken: String,
-        @Query("time_range") timeRange: String = "short_term"
+        @Query("time_range") timeRange: String = "short_term",
     ): Response<Track>
 
     @GET(value= "me/top/artists")
     suspend fun getCurrentUserTopArtists(
         @Header("Authorization") accessToken: String,
-        @Query("time_range") timeRange: String = "short_term"
+        @Query("time_range") timeRange: String = "short_term",
     ): Response<Artist>
 
     @GET(value= "me/player/recently-played")
@@ -52,6 +53,14 @@ interface GuessifyApiService {
     suspend fun getCurrentUserCurrentlyPlayingTrack(
         @Header("Authorization") accessToken: String,
     ): Response<CurrentlyPlayingTrack>
+
+    @GET(value= "recommendations")
+    suspend fun getCurrentUserRecommendations(
+        @Header("Authorization") accessToken: String,
+        @Query("seed_artists") artistsId: String = "",
+        @Query("seed_tracks") tracksId: String = "",
+        @Query("limit") limit: Int = 1
+    ): Response<DiscoverTrack>
 }
 
 object GuessifyApi {

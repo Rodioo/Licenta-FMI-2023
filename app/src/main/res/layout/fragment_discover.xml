@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="viewModel"
+            type="com.antoniofalcescu.licenta.discover.DiscoverViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".discover.DiscoverFragment">
+
+        <LinearLayout
+            android:id="@+id/recommended_track_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/medium_margin"
+            android:layout_marginTop="@dimen/extra_large_margin"
+            android:layout_marginEnd="@dimen/small_margin"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/discover_recommendation_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/discover_next_song"
+                android:gravity="center"
+                android:textSize="@dimen/big_text"
+                android:textStyle="bold"
+                />
+
+            <TextView
+                android:id="@+id/think_you_like_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/large_margin"
+                android:text="@string/we_think_you_like"
+                android:textSize="@dimen/big_text"
+                android:textStyle="bold"
+                android:visibility="gone"
+                />
+
+            <LinearLayout
+                android:id="@+id/discovered_track_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/small_margin"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/discover_track_image"
+                    android:layout_width="@dimen/track_image_size"
+                    android:layout_height="match_parent"
+                    app:roundedImageUrl="@{viewModel.discoverTrack.tracks[0].album.images[0].url}"
+                    tools:srcCompat="@drawable/loading_animation"
+                    android:visibility="visible"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="@dimen/small_margin"
+                    android:orientation="vertical"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/extra_small_margin"
+                        android:text="@{viewModel.discoverTrack.tracks[0].name.substring(0, Math.min(27, viewModel.discoverTrack.tracks[0].name.length()))}"
+                        android:textSize="@dimen/medium_text"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/extra_small_margin"
+                        android:text="@{viewModel.discoverTrack.tracks[0].artists[0].name}"
+                        android:textSize="@dimen/small_text" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/play_sample_button"
+                        style="@style/button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:drawableStart="@drawable/baseline_play_circle_24"
+                        android:drawablePadding="@dimen/button_drawable_padding"
+                        android:layout_marginBottom="@dimen/small_margin"
+                        android:layout_marginTop="@dimen/small_margin"
+                        android:text="@string/play_sample"/>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:id="@+id/separator"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginStart="@dimen/extra_large_margin"
+            android:layout_marginTop="@dimen/medium_margin"
+            android:layout_marginEnd="@dimen/extra_large_margin"
+            android:background="@color/md_theme_dark_primary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/recommended_track_view" />
+
+        <ScrollView
+            android:id="@+id/scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/medium_margin"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/separator">
+
+            <LinearLayout
+                android:id="@+id/based_on_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/discover_buttons_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginStart="@dimen/extra_large_margin"
+                    android:layout_marginEnd="@dimen/extra_large_margin"
+                    >
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/get_based_on_random_tracks_button"
+                        style="@style/button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="@dimen/large_margin"
+                        android:text="@string/discover_based_on_tracks"
+                         />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/get_based_on_random_artists_button"
+                        style="@style/button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="@dimen/large_margin"
+                        android:layout_marginBottom="@dimen/bottom_nav_margin"
+                        android:text="@string/discover_based_on_artists" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/based_on_tracks_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/based_on_tracks_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/extra_large_margin"
+                        android:layout_marginTop="@dimen/medium_margin"
+                        android:text="@string/based_on_these_tracks"
+                        android:textSize="@dimen/big_text"
+                        android:textStyle="bold"
+                        />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/based_on_tracks_recycler"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/large_margin"
+                        android:layout_marginTop="@dimen/small_margin"
+                        android:layout_marginEnd="@dimen/large_margin"
+                        android:orientation="horizontal"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        app:tracksList="@{viewModel.shuffledTracks.items}"
+                        />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/based_on_artists_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/based_on_artists_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/extra_large_margin"
+                        android:layout_marginTop="@dimen/medium_margin"
+                        android:text="@string/based_on_these_artists"
+                        android:textSize="@dimen/big_text"
+                        android:textStyle="bold"
+                        />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/based_on_artists_recycler"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/large_margin"
+                        android:layout_marginTop="@dimen/small_margin"
+                        android:layout_marginEnd="@dimen/large_margin"
+                        android:orientation="horizontal"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        app:artistsList="@{viewModel.shuffledArtists.items}"
+                        />
+                </LinearLayout>
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/discover_again_button"
+                    style="@style/button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="@dimen/large_margin"
+                    android:layout_marginBottom="@dimen/bottom_nav_margin"
+                    android:text="@string/discover_again"
+                    android:visibility="gone"/>
+
+            </LinearLayout>
+
+        </ScrollView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

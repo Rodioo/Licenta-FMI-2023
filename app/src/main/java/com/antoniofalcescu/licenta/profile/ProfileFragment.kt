@@ -38,7 +38,7 @@ class ProfileFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
-        tracksAdapter = TracksAdapter(viewModel) {
+        tracksAdapter = TracksAdapter() {
             trackUrl -> openSpotifyLink(trackUrl)
         }
         binding.topTracksRecycler.adapter = tracksAdapter
@@ -49,7 +49,7 @@ class ProfileFragment : Fragment() {
                 track -> tracksAdapter.submitList(track.items)
         }
 
-        artistsAdapter = ArtistsAdapter(viewModel) {
+        artistsAdapter = ArtistsAdapter() {
             artistUrl -> openSpotifyLink(artistUrl)
         }
         binding.topArtistsRecycler.adapter = artistsAdapter

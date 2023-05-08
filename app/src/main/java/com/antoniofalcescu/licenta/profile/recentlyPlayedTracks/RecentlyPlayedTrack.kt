@@ -5,7 +5,8 @@ import java.time.Instant
 import kotlin.math.round
 
 data class RecentlyPlayedTrack(
-    val items: List<RecentlyPlayedTrackItem>
+    val items: List<RecentlyPlayedTrackItem>?,
+    val error: ErrorBody?
 )
 
 data class RecentlyPlayedTrackItem(
@@ -21,3 +22,8 @@ data class RecentlyPlayedTrackItem(
         elapsedHours = "${elapsedHoursAux}h"
     }
 }
+
+data class ErrorBody(
+    val status: Int,
+    val message: String
+)

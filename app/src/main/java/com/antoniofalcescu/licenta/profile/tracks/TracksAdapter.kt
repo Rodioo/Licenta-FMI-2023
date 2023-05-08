@@ -10,7 +10,6 @@ import com.antoniofalcescu.licenta.databinding.TrackItemViewBinding
 import com.antoniofalcescu.licenta.profile.ProfileViewModel
 
 class TracksAdapter(
-    private val viewModel: ProfileViewModel,
     private val onItemClick: (String) -> Unit
     ): ListAdapter<TrackItem?, TracksAdapter.ViewHolder>(DiffCallback) {
 

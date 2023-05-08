@@ -28,8 +28,8 @@
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" />
     <fragment
-        android:id="@+id/recommendationsFragment"
-        android:name="com.antoniofalcescu.licenta.recommendations.RecommendationsFragment"
-        android:label="fragment_recommendations"
-        tools:layout="@layout/fragment_recommendations" />
+        android:id="@+id/discoverFragment"
+        android:name="com.antoniofalcescu.licenta.discover.DiscoverFragment"
+        android:label="fragment_discover"
+        tools:layout="@layout/fragment_discover" />
 </navigation>

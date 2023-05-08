@@ -9,7 +9,6 @@ import com.antoniofalcescu.licenta.databinding.ArtistItemViewBinding
 import com.antoniofalcescu.licenta.profile.ProfileViewModel
 
 class ArtistsAdapter(
-    private val viewModel: ProfileViewModel,
     private val onItemClick: (String) -> Unit
 ): ListAdapter<ArtistItem, ArtistsAdapter.ViewHolder>(DiffCallback) {
 

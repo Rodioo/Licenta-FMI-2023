@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/recommendationsFragment"
+        android:id="@+id/discoverFragment"
         android:icon="@drawable/baseline_recommend_24"
-        android:title="@string/for_you" />
+        android:title="@string/discover" />
     <item
         android:id="@+id/homeFragment"
         android:icon="@drawable/baseline_home_24"

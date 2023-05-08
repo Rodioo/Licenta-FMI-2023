@@ -20,8 +20,7 @@ class LoginViewModel(application: Application): AndroidViewModel(application) {
     private val accessTokenDao: AccessTokenDao
 
     init {
-        val db = AccessTokenDatabase.getInstance(application)
-        accessTokenDao = db.accessTokenDao
+        accessTokenDao = AccessTokenDatabase.getInstance(application).accessTokenDao
     }
 
     fun saveAccessToken(token: String) {
