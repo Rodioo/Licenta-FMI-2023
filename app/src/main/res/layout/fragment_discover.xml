@@ -91,11 +91,13 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:drawableStart="@drawable/baseline_play_circle_24"
+                        android:drawableStart="@drawable/baseline_cancel_24"
                         android:drawablePadding="@dimen/button_drawable_padding"
                         android:layout_marginBottom="@dimen/small_margin"
                         android:layout_marginTop="@dimen/small_margin"
-                        android:text="@string/play_sample"/>
+                        android:backgroundTint="@color/grey"
+                        android:enabled="false"
+                        android:text="@string/no_sample"/>
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

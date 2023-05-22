@@ -32,4 +32,5 @@
     <color name="md_theme_dark_scrim">#000000</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="grey">#D8D8D8</color>
 </resources>

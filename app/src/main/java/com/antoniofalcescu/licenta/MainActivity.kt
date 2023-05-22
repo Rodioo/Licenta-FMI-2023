@@ -16,6 +16,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 
 private const val ACCESS_TOKEN_REFRESH_MARGIN: Long = 5 * 1000
 
+//TODO: check why the user doesn't get redirected to login fragment when token is expired and he gets 401 response codes
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
@@ -55,7 +56,6 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.accessToken.observe(this) { accessToken ->
             val currentTime = System.currentTimeMillis()
-            Log.e("MainActivity", accessToken.toString())
             //TODO: De adaugat check daca este in joc sa nu il deconecteze
             if (accessToken?.value == null || accessToken.expiresAt <= currentTime - ACCESS_TOKEN_REFRESH_MARGIN) {
                 navController.navigate(R.id.loginFragment)

@@ -61,8 +61,6 @@ class DiscoverViewModel(application: Application): AndroidViewModel(application)
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     _track.value = response.body()
-//                    val shuffledItems = response.body()!!.items.shuffled().take(3)
-//                    _track.value = Track(items= shuffledItems)
                     Log.e("getCurrentUserTopTracks_DISCOVER_SUCCESS", _track.value.toString())
                 } else {
                     Log.e("getCurrentUserTopTracks_DISCOVER_FAILURE", response.code().toString())
@@ -78,8 +76,6 @@ class DiscoverViewModel(application: Application): AndroidViewModel(application)
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     _artist.value = response.body()
-//                    val shuffledItems = response.body()!!.items.shuffled().take(3)
-//                    _artist.value = Artist(items= shuffledItems)
                     Log.e("getCurrentUserTopArtists_DISCOVER_SUCCESS", _track.value.toString())
                 } else {
                     Log.e("getCurrentUserTopArtists_DISCOVER_FAILURE", response.code().toString())
