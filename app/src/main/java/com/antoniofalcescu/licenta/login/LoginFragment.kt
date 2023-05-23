@@ -17,8 +17,8 @@ import com.antoniofalcescu.licenta.R
 import com.antoniofalcescu.licenta.databinding.FragmentLoginBinding
 import com.spotify.sdk.android.auth.*
 
-private const val clientId = "dd13ee5f82ce43d0a607b3ebc1f2de91"
-private const val redirectUri = "com.antoniofalcescu.licenta://callback"
+const val clientId = "dd13ee5f82ce43d0a607b3ebc1f2de91"
+const val redirectUri = "com.antoniofalcescu.licenta://callback"
 
 class LoginFragment : Fragment() {
 
@@ -49,12 +49,15 @@ class LoginFragment : Fragment() {
     }
 
     fun spotifyLogin() {
+        Log.e("loginFragment", "1")
+
         val request = getAuthenticationRequest()
         val loginIntent = AuthorizationClient.createLoginActivityIntent(activity, request)
         launcher.launch(loginIntent)
     }
 
     private fun handleLoginResult(result: ActivityResult) {
+        Log.e("loginFragment", "2")
         if (result.data != null) {
             val response = AuthorizationClient.getResponse(result.resultCode, result.data)
             when (response.type) {

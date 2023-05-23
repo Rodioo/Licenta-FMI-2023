@@ -1,10 +1,13 @@
 package com.antoniofalcescu.licenta
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.antoniofalcescu.licenta.login.LoginFragment
 import com.antoniofalcescu.licenta.profile.Profile
+import com.antoniofalcescu.licenta.repository.GuessifyApi
 import com.antoniofalcescu.licenta.repository.accessToken.AccessToken
 import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDao
 import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDatabase
@@ -43,4 +46,13 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         _accessToken.value = accessToken!!
     }
 
+    fun saveAccessToken(token: String) {
+        dbScope.launch {
+            val accessToken = AccessToken(value = token)
+            accessTokenDao.save(accessToken)
+            withContext(Dispatchers.Main) {
+                _accessToken.value = accessToken
+            }
+        }
+    }
 }
