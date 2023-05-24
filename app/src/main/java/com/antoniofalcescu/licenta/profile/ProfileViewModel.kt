@@ -23,7 +23,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     private val dbScope: CoroutineScope = CoroutineScope(viewModelJob + Dispatchers.IO)
 
     private val accessTokenDao: AccessTokenDao
-    private lateinit var accessToken: AccessToken
+    private var accessToken: AccessToken? = null
 
     private val _profile = MutableLiveData<Profile>()
     val profile: LiveData<Profile>
@@ -50,7 +50,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
         accessTokenDao = AccessTokenDatabase.getInstance(application).accessTokenDao
 
         coroutineScope.launch {
-            if (!(::accessToken.isInitialized) || accessToken.value == null) {
+            if (accessToken?.value == null) {
                 accessToken = getAccessToken()
             }
             getCurrentUserProfile()
@@ -69,7 +69,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
 
     private fun getCurrentUserProfile() {
         coroutineScope.launch {
-            val response = GuessifyApi.retrofitService.getCurrentUserProfile("Bearer ${accessToken.value}")
+            val response = GuessifyApi.retrofitService.getCurrentUserProfile("Bearer ${accessToken!!.value}")
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Log.e("getCurrentUserProfile_SUCCESS", response.body().toString())
@@ -84,7 +84,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
 
     private fun getCurrentUserTopTracks() {
         coroutineScope.launch {
-            val response = GuessifyApi.retrofitService.getCurrentUserTopTracks("Bearer ${accessToken.value}")
+            val response = GuessifyApi.retrofitService.getCurrentUserTopTracks("Bearer ${accessToken!!.value}")
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Log.e("getCurrentUserTopTracks_SUCCESS", response.body().toString())
@@ -99,7 +99,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
 
     private fun getCurrentUserTopArtists() {
         coroutineScope.launch {
-            val response = GuessifyApi.retrofitService.getCurrentUserTopArtists("Bearer ${accessToken.value}")
+            val response = GuessifyApi.retrofitService.getCurrentUserTopArtists("Bearer ${accessToken!!.value}")
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Log.e("getCurrentUserTopArtists_SUCCESS", response.body().toString())
@@ -115,11 +115,10 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     private fun getCurrentUserRecentlyPlayedTracks() {
         val dayInMilliseconds = 24 * 60 * 60 * 1000
         val afterTimestamp = System.currentTimeMillis() - dayInMilliseconds
-        Log.e("recentlyPlayed", afterTimestamp.toString())
 
         coroutineScope.launch {
             val response = GuessifyApi.retrofitService.getCurrentUserRecentlyPlayedTracks(
-                "Bearer ${accessToken.value}",
+                "Bearer ${accessToken!!.value}",
                 afterTimestamp = afterTimestamp
             )
             withContext(Dispatchers.Main) {
@@ -137,7 +136,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     private fun getCurrentUserCurrentlyPlayingTrack() {
         coroutineScope.launch {
             while(true) {
-                val response = GuessifyApi.retrofitService.getCurrentUserCurrentlyPlayingTrack("Bearer ${accessToken.value}")
+                val response = GuessifyApi.retrofitService.getCurrentUserCurrentlyPlayingTrack("Bearer ${accessToken!!.value}")
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful) {
                         Log.e("getCurrentUserCurrentlyPlayedTrack_SUCCESS", response.body().toString())

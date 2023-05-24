@@ -48,16 +48,13 @@ class LoginFragment : Fragment() {
         return binding.root
     }
 
-    fun spotifyLogin() {
-        Log.e("loginFragment", "1")
-
+    private fun spotifyLogin() {
         val request = getAuthenticationRequest()
         val loginIntent = AuthorizationClient.createLoginActivityIntent(activity, request)
         launcher.launch(loginIntent)
     }
 
     private fun handleLoginResult(result: ActivityResult) {
-        Log.e("loginFragment", "2")
         if (result.data != null) {
             val response = AuthorizationClient.getResponse(result.resultCode, result.data)
             when (response.type) {

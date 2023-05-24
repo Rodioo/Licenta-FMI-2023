@@ -50,9 +50,6 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         dbScope.launch {
             val accessToken = AccessToken(value = token)
             accessTokenDao.save(accessToken)
-            withContext(Dispatchers.Main) {
-                _accessToken.value = accessToken
-            }
         }
     }
 }

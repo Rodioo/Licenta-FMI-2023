@@ -50,8 +50,7 @@ class DiscoverUtilsUI(
         }
     }
 
-    fun updateUiNoSample() {
-        Log.e("apel", "noSample")
+    private fun updateUiNoSample() {
         binding.playSampleButton.text = fragment.resources.getString(R.string.no_sample)
         binding.playSampleButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
             ContextCompat.getDrawable(fragment.requireContext(), R.drawable.baseline_cancel_24),

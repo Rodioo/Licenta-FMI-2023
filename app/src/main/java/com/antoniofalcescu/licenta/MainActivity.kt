@@ -12,6 +12,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
@@ -71,37 +72,42 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        if (savedInstanceState != null) {
-            val accessToken: AccessToken? = savedInstanceState.getParcelable("accessToken")
-            viewModel.restoreAccessToken(accessToken)
-            reinitializeAccessToken()
-        } else {
-            navController.navigate(R.id.profileFragment)
-        }
-
         handler.postDelayed(object: Runnable {
             override fun run() {
                 reinitializeAccessToken()
                 handler.postDelayed(this, ACCESS_TOKEN_REFRESH_INTERVAL)
             }
         }, ACCESS_TOKEN_REFRESH_INTERVAL)
+    }
 
+    override fun onStart() {
+        super.onStart()
+        viewModel.accessToken.observe(this) { accessToken ->
+            val currentTime = System.currentTimeMillis()
+            if (accessToken != null && accessToken.expiresAt > currentTime + ACCESS_TOKEN_REFRESH_MARGIN ) {
+                navController.navigate(R.id.profileFragment)
+            } else {
+                try {
+                    reinitializeAccessToken()
+                } catch(e: Exception) {
+                    Log.e("eroare", e.toString())
+                    navController.navigate(R.id.loginFragment)
+                }
+            }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        viewModel.accessToken.value?.value?.let { viewModel.saveAccessToken(it) }
     }
 
     private fun reinitializeAccessToken() {
         val currentTime = System.currentTimeMillis()
-        if (viewModel.accessToken.value!!.value == null ||
-            viewModel.accessToken.value!!.expiresAt <= currentTime + ACCESS_TOKEN_REFRESH_MARGIN
-        ) {
+        if (viewModel.accessToken.value?.value == null || viewModel.accessToken.value!!.expiresAt <= currentTime + ACCESS_TOKEN_REFRESH_MARGIN) {
             spotifyLogin()
             Log.e("REINITIALIZED_ACCESS_TOKEN", viewModel.accessToken.value.toString())
-        }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        viewModel.accessToken.value?.let {accessToken ->
-            outState.putParcelable("accessToken", accessToken)
         }
     }
 
@@ -118,6 +124,7 @@ class MainActivity : AppCompatActivity() {
                 AuthorizationResponse.Type.TOKEN -> {
                     viewModel.saveAccessToken(response.accessToken)
                     Toast.makeText(this, "Reinitialized Spotify Connection", Toast.LENGTH_SHORT).show()
+                    navController.navigate(R.id.profileFragment)
                 }
                 AuthorizationResponse.Type.ERROR -> {
                     Log.e("token_auth", response.error)

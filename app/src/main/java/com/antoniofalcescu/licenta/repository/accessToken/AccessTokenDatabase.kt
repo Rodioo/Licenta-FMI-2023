@@ -9,7 +9,6 @@ import androidx.room.RoomDatabase
 abstract class AccessTokenDatabase: RoomDatabase() {
 
     abstract val accessTokenDao: AccessTokenDao
-
     companion object {
 
         //Volatile annotation is used for singleton instances
