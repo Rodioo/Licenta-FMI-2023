@@ -108,7 +108,6 @@ class MainActivity : AppCompatActivity() {
         if (viewModel.accessToken.value?.value == null
             || viewModel.accessToken.value!!.expiresAt <= currentTime + ACCESS_TOKEN_REFRESH_MARGIN
             || viewModel.accessToken.value!!.needsRefresh) {
-            Log.e("main", "4")
             spotifyLogin()
             Log.e("REINITIALIZED_ACCESS_TOKEN", viewModel.accessToken.value.toString())
         }

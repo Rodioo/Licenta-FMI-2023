@@ -26,7 +26,6 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
     val accessToken: LiveData<AccessToken>
         get() = _accessToken
 
-
     init {
         accessTokenDao = AccessTokenDatabase.getInstance(application).accessTokenDao
         coroutineScope.launch {
@@ -34,8 +33,9 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
             _accessToken.postValue(token)
 
             while(true) {
-                token = getAccessToken()
-                if (token.needsRefresh) {
+                Log.e("MainViewModel", "Checking token: $token")
+                if (_accessToken.value?.needsRefresh == true) {
+                    token = getAccessToken()
                     _accessToken.postValue(token)
                 }
                 delay(TOKEN_REFRESH_TIMER_REQUEST)
