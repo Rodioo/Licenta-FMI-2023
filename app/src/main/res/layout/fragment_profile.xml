@@ -91,7 +91,7 @@
                     android:layout_marginTop="@dimen/small_margin"
                     android:layout_marginEnd="@dimen/small_margin"
                     android:layout_gravity="center"
-                    android:drawableStart="@drawable/spotify"
+                    android:drawableStart="@drawable/small_spotify_icon"
                     android:drawablePadding="@dimen/button_drawable_padding"
                     android:text="@string/open_with_spotify" />
             </LinearLayout>
@@ -165,7 +165,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@{viewModel.currentTrack.item.name.substring(0, Math.min(30, viewModel.currentTrack.item.name.length()))}"
+                            android:text="@{viewModel.currentTrack.item.name.substring(0, Math.min(23, viewModel.currentTrack.item.name.length()))}"
                             android:textSize="@dimen/medium_text"
                             android:textStyle="bold"
                             android:layout_marginTop="@dimen/extra_small_margin"

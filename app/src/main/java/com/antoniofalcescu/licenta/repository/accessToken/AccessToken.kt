@@ -2,6 +2,7 @@ package com.antoniofalcescu.licenta.repository.accessToken
 
 import android.os.Parcelable
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
 
@@ -15,5 +16,6 @@ data class AccessToken(
     var id: Int = 1,
     var value: String? = null,
     var createdAt: Long = System.currentTimeMillis(),
-    var expiresAt: Long = System.currentTimeMillis() + HOUR_IN_MILLISECONDS
+    var expiresAt: Long = System.currentTimeMillis() + HOUR_IN_MILLISECONDS,
+    var needsRefresh: Boolean = false
 ) : Parcelable

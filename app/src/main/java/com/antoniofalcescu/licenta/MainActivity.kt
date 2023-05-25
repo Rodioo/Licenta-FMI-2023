@@ -84,7 +84,7 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         viewModel.accessToken.observe(this) { accessToken ->
             val currentTime = System.currentTimeMillis()
-            if (accessToken != null && accessToken.expiresAt > currentTime + ACCESS_TOKEN_REFRESH_MARGIN ) {
+            if (accessToken != null && accessToken.expiresAt > currentTime + ACCESS_TOKEN_REFRESH_MARGIN && !accessToken.needsRefresh) {
                 navController.navigate(R.id.profileFragment)
             } else {
                 try {
@@ -105,7 +105,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun reinitializeAccessToken() {
         val currentTime = System.currentTimeMillis()
-        if (viewModel.accessToken.value?.value == null || viewModel.accessToken.value!!.expiresAt <= currentTime + ACCESS_TOKEN_REFRESH_MARGIN) {
+        if (viewModel.accessToken.value?.value == null
+            || viewModel.accessToken.value!!.expiresAt <= currentTime + ACCESS_TOKEN_REFRESH_MARGIN
+            || viewModel.accessToken.value!!.needsRefresh) {
+            Log.e("main", "4")
             spotifyLogin()
             Log.e("REINITIALIZED_ACCESS_TOKEN", viewModel.accessToken.value.toString())
         }

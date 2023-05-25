@@ -13,6 +13,8 @@ import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDao
 import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDatabase
 import kotlinx.coroutines.*
 
+private const val TOKEN_REFRESH_TIMER_REQUEST = 2000L
+
 class MainViewModel(application: Application): AndroidViewModel(application) {
 
     private var viewModelJob: Job = Job()
@@ -27,11 +29,16 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
 
     init {
         accessTokenDao = AccessTokenDatabase.getInstance(application).accessTokenDao
+        coroutineScope.launch {
+            var token = getAccessToken()
+            _accessToken.postValue(token)
 
-        if (_accessToken.value == null) {
-            coroutineScope.launch {
-                val token = getAccessToken()
-                _accessToken.postValue(token)
+            while(true) {
+                token = getAccessToken()
+                if (token.needsRefresh) {
+                    _accessToken.postValue(token)
+                }
+                delay(TOKEN_REFRESH_TIMER_REQUEST)
             }
         }
     }
@@ -40,10 +47,6 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         return withContext(dbScope.coroutineContext) {
             accessTokenDao.get()
         }
-    }
-
-    fun restoreAccessToken(accessToken: AccessToken?) {
-        _accessToken.value = accessToken!!
     }
 
     fun saveAccessToken(token: String) {

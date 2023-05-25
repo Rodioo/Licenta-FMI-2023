@@ -10,4 +10,7 @@ interface AccessTokenDao {
 
     @Query("SELECT * FROM access_token WHERE id = 1")
     fun get(): AccessToken
+
+    @Query("UPDATE access_token SET needsRefresh=:needsRefresh WHERE id = 1")
+    fun updateRefresh(needsRefresh: Boolean)
 }

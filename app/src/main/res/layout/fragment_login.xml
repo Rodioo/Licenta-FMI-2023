@@ -12,7 +12,7 @@
             android:id="@+id/login_button"
             style="@style/button"
             android:text="@string/sign_in"
-            android:drawableStart="@drawable/spotify"
+            android:drawableStart="@drawable/small_spotify_icon"
             android:drawablePadding="@dimen/button_drawable_padding"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

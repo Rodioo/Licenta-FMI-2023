@@ -23,4 +23,8 @@
     <string name="no_sample">No Sample</string>
     <string name="loading">Loading…</string>
     <string name="failed_to_load">Failed to Load</string>
+    <string name="create_game">Create game</string>
+    <string name="join_game">Join game</string>
+    <string name="guessify">Guessify</string>
+    <string name="pwd_by">Pwd. by</string>
 </resources>
