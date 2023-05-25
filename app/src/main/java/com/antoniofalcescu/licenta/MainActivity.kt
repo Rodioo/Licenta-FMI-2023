@@ -78,18 +78,16 @@ class MainActivity : AppCompatActivity() {
                 handler.postDelayed(this, ACCESS_TOKEN_REFRESH_INTERVAL)
             }
         }, ACCESS_TOKEN_REFRESH_INTERVAL)
-    }
 
-    override fun onStart() {
-        super.onStart()
         viewModel.accessToken.observe(this) { accessToken ->
             val currentTime = System.currentTimeMillis()
             if (accessToken != null && accessToken.expiresAt > currentTime + ACCESS_TOKEN_REFRESH_MARGIN && !accessToken.needsRefresh) {
+                Log.e("ceva", "1")
                 navController.navigate(R.id.profileFragment)
             } else {
                 try {
                     reinitializeAccessToken()
-                } catch(e: Exception) {
+                } catch (e: Exception) {
                     Log.e("eroare", e.toString())
                     navController.navigate(R.id.loginFragment)
                 }

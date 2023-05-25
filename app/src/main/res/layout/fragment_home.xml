@@ -15,14 +15,15 @@
         tools:context=".home.HomeFragment">
 
         <LinearLayout
+            android:id="@+id/linearLayout2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/extra_large_margin"
+            android:layout_marginTop="@dimen/top_title_margin"
             android:orientation="vertical"
-            app:layout_constraintBottom_toTopOf="@+id/separator"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.496"
-            app:layout_constraintStart_toStartOf="parent">
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
             <TextView
                 android:id="@+id/guessify_title"
@@ -43,19 +44,17 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="@dimen/extra_small_margin"
                     android:text="@string/pwd_by"
                     android:textSize="@dimen/small_text"
-                    android:textStyle="bold"
-                    android:layout_marginEnd="@dimen/extra_small_margin"/>
+                    android:textStyle="bold" />
 
                 <ImageView
                     android:layout_width="64dp"
                     android:layout_height="32dp"
                     android:layout_marginStart="@dimen/extra_small_margin"
                     android:src="@drawable/spotify_logo_white" />
-
             </LinearLayout>
-
         </LinearLayout>
 
         <View
@@ -63,24 +62,25 @@
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:layout_marginStart="@dimen/extra_large_margin"
+            android:layout_marginTop="@dimen/extra_large_margin"
             android:layout_marginEnd="@dimen/extra_large_margin"
-            android:layout_marginBottom="@dimen/extra_large_margin"
             android:background="@color/md_theme_dark_primary"
-            app:layout_constraintBottom_toTopOf="@+id/start_game_layout"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
 
         <LinearLayout
             android:id="@+id/start_game_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/medium_margin"
+            android:layout_marginTop="@dimen/extra_large_margin"
             android:layout_marginEnd="@dimen/medium_margin"
             android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/separator">
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/create_game"
@@ -89,8 +89,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/create_game"
-                android:textSize="@dimen/button_big_text_size"
-                android:textAllCaps="true" />
+                android:textAllCaps="true"
+                android:textSize="@dimen/button_big_text_size" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/join_game"
@@ -100,8 +100,8 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="@dimen/large_margin"
                 android:text="@string/join_game"
-                android:textSize="@dimen/button_big_text_size"
-                android:textAllCaps="true" />
+                android:textAllCaps="true"
+                android:textSize="@dimen/button_big_text_size" />
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

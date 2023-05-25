@@ -7,6 +7,7 @@
     <dimen name="large_margin">24dp</dimen>
     <dimen name="extra_large_margin">32dp</dimen>
     <dimen name="bottom_nav_margin">84dp</dimen>
+    <dimen name="top_title_margin">96dp</dimen>
 
     <!-- Button -->
     <dimen name="button_radius">18dp</dimen>

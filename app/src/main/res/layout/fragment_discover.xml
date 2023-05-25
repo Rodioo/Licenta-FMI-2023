@@ -15,6 +15,49 @@
         tools:context=".discover.DiscoverFragment">
 
         <LinearLayout
+            android:id="@+id/linearLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/top_title_margin"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.496"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/guessify_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/guessify"
+                android:textSize="@dimen/title_text"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="96dp"
+                android:layout_marginTop="@dimen/extra_small_margin">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="@dimen/extra_small_margin"
+                    android:text="@string/pwd_by"
+                    android:textSize="@dimen/small_text"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="64dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="@dimen/extra_small_margin"
+                    android:src="@drawable/spotify_logo_white" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/recommended_track_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -24,7 +67,7 @@
             android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout">
 
             <TextView
                 android:id="@+id/discover_recommendation_text"
@@ -43,24 +86,23 @@
                 android:text="@string/we_think_you_like"
                 android:textSize="@dimen/big_text"
                 android:textStyle="bold"
-                android:visibility="gone"
-                />
+                android:visibility="gone" />
 
             <LinearLayout
                 android:id="@+id/discovered_track_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:layout_marginTop="@dimen/small_margin"
+                android:orientation="horizontal"
                 android:visibility="gone">
 
                 <ImageView
                     android:id="@+id/discover_track_image"
                     android:layout_width="@dimen/track_image_size"
                     android:layout_height="match_parent"
+                    android:visibility="visible"
                     app:roundedImageUrl="@{viewModel.discoverTrack.tracks[0].album.images[0].url}"
-                    tools:srcCompat="@drawable/loading_animation"
-                    android:visibility="visible"/>
+                    tools:srcCompat="@drawable/loading_animation" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -90,13 +132,13 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
+                        android:layout_marginTop="@dimen/small_margin"
+                        android:layout_marginBottom="@dimen/small_margin"
+                        android:backgroundTint="@color/grey"
                         android:drawableStart="@drawable/baseline_cancel_24"
                         android:drawablePadding="@dimen/button_drawable_padding"
-                        android:layout_marginBottom="@dimen/small_margin"
-                        android:layout_marginTop="@dimen/small_margin"
-                        android:backgroundTint="@color/grey"
                         android:enabled="false"
-                        android:text="@string/no_sample"/>
+                        android:text="@string/no_sample" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
@@ -118,6 +160,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="@dimen/medium_margin"
+            android:layout_marginBottom="@dimen/small_margin"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/separator">
@@ -132,10 +175,9 @@
                     android:id="@+id/discover_buttons_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:layout_marginStart="@dimen/extra_large_margin"
                     android:layout_marginEnd="@dimen/extra_large_margin"
-                    >
+                    android:orientation="vertical">
 
                     <androidx.appcompat.widget.AppCompatButton
                         android:id="@+id/get_based_on_random_tracks_button"
@@ -144,8 +186,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:layout_marginTop="@dimen/large_margin"
-                        android:text="@string/discover_based_on_tracks"
-                         />
+                        android:text="@string/discover_based_on_tracks" />
 
                     <androidx.appcompat.widget.AppCompatButton
                         android:id="@+id/get_based_on_random_artists_button"
@@ -173,8 +214,7 @@
                         android:layout_marginTop="@dimen/medium_margin"
                         android:text="@string/based_on_these_tracks"
                         android:textSize="@dimen/big_text"
-                        android:textStyle="bold"
-                        />
+                        android:textStyle="bold" />
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/based_on_tracks_recycler"
@@ -185,8 +225,7 @@
                         android:layout_marginEnd="@dimen/large_margin"
                         android:orientation="horizontal"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                        app:tracksList="@{viewModel.shuffledTracks.items}"
-                        />
+                        app:tracksList="@{viewModel.shuffledTracks.items}" />
 
                 </LinearLayout>
 
@@ -205,8 +244,7 @@
                         android:layout_marginTop="@dimen/medium_margin"
                         android:text="@string/based_on_these_artists"
                         android:textSize="@dimen/big_text"
-                        android:textStyle="bold"
-                        />
+                        android:textStyle="bold" />
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/based_on_artists_recycler"
@@ -216,9 +254,8 @@
                         android:layout_marginTop="@dimen/small_margin"
                         android:layout_marginEnd="@dimen/large_margin"
                         android:orientation="horizontal"
-                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         app:artistsList="@{viewModel.shuffledArtists.items}"
-                        />
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
                 </LinearLayout>
 
                 <androidx.appcompat.widget.AppCompatButton
@@ -230,7 +267,7 @@
                     android:layout_marginTop="@dimen/large_margin"
                     android:layout_marginBottom="@dimen/bottom_nav_margin"
                     android:text="@string/discover_again"
-                    android:visibility="gone"/>
+                    android:visibility="gone" />
 
             </LinearLayout>
 

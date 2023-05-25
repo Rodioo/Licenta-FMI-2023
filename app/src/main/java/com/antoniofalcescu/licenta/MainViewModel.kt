@@ -33,7 +33,6 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
             _accessToken.postValue(token)
 
             while(true) {
-                Log.e("MainViewModel", "Checking token: $token")
                 if (_accessToken.value?.needsRefresh == true) {
                     token = getAccessToken()
                     _accessToken.postValue(token)
