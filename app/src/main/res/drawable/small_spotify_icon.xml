@@ -1,0 +1,7 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:drawable="@drawable/spotify_icon_green"
+        android:width="@dimen/spotify_icon_size"
+        android:height="@dimen/spotify_icon_size">
+    </item>
+</layer-list>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="artistItem"
+            type="com.antoniofalcescu.licenta.profile.artists.ArtistItem" />
+    </data>
+
+    <LinearLayout
+        android:id="@+id/artist_view"
+        android:layout_height="wrap_content"
+        android:layout_width="@dimen/track_image_size"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/track_image_size"
+            app:roundedImageUrl="@{artistItem.images[0].url}"
+            tools:srcCompat="@drawable/loading_animation" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@{artistItem.name.substring(0, Math.min(14, artistItem.name.length()))}"
+            android:textSize="@dimen/small_text"
+            android:layout_marginTop="@dimen/extra_small_margin"
+            android:layout_marginStart="@dimen/small_margin" />
+    </LinearLayout>
+
+</layout>

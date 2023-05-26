@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="viewModel"
+            type="com.antoniofalcescu.licenta.profile.ProfileViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".profile.ProfileFragment">
+
+        <ImageView
+            android:id="@+id/profile_loading"
+            android:layout_width="@dimen/loading_image_size"
+            android:layout_height="@dimen/loading_image_size"
+            android:background="@drawable/circular_image"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/loading_animation"
+            tools:srcCompat="@drawable/loading_animation" />
+
+        <LinearLayout
+            android:id="@+id/profile_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/small_margin"
+            android:layout_marginTop="@dimen/large_margin"
+            android:layout_marginEnd="@dimen/medium_margin"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/profile_image"
+                android:layout_width="@dimen/profile_image_size"
+                android:layout_height="@dimen/profile_image_size"
+                android:background="@drawable/circular_image"
+                app:circleImageUrl="@{viewModel.profile.images[0].url}"
+                app:srcCompat="@drawable/loading_animation"
+                tools:srcCompat="@drawable/loading_animation" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="@dimen/small_margin"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/country_flag_image"
+                        android:layout_width="@dimen/country_flag_size"
+                        android:layout_height="@dimen/country_flag_size"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginTop="@dimen/extra_small_margin"
+                        app:countryFlag="@{viewModel.profile.country}"
+                        tools:srcCompat="@tools:sample/avatars" />
+
+                    <TextView
+                        android:id="@+id/profile_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="@dimen/small_margin"
+                        android:text="@{viewModel.profile.display_name}"
+                        android:textSize="@dimen/big_text"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/open_spotify_button"
+                    style="@style/button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/small_margin"
+                    android:layout_marginTop="@dimen/small_margin"
+                    android:layout_marginEnd="@dimen/small_margin"
+                    android:layout_gravity="center"
+                    android:drawableStart="@drawable/small_spotify_icon"
+                    android:drawablePadding="@dimen/button_drawable_padding"
+                    android:text="@string/open_with_spotify" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:id="@+id/separator"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginStart="@dimen/extra_large_margin"
+            android:layout_marginTop="@dimen/medium_margin"
+            android:layout_marginEnd="@dimen/extra_large_margin"
+            android:background="@color/md_theme_dark_primary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/profile_view"
+            android:visibility="gone"/>
+
+        <ScrollView
+            android:id="@+id/scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/medium_margin"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/separator"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                >
+
+                <TextView
+                    android:id="@+id/currently_playing_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/extra_large_margin"
+                    android:layout_marginTop="@dimen/medium_margin"
+                    android:text="@string/currently_playing_on_spotify"
+                    android:textSize="@dimen/big_text"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    />
+
+                <LinearLayout
+                    android:id="@+id/current_track_view"
+                    android:layout_height="@dimen/track_image_size"
+                    android:layout_width="wrap_content"
+                    android:layout_marginTop="@dimen/small_margin"
+                    android:layout_marginStart="@dimen/medium_margin"
+                    android:orientation="horizontal"
+                    android:visibility="gone"
+                    >
+
+                    <ImageView
+                        android:id="@+id/currently_playing_image"
+                        android:layout_width="@dimen/track_image_size"
+                        android:layout_height="match_parent"
+                        app:roundedImageUrl="@{viewModel.currentTrack.item.album.images[0].url}"
+                        tools:srcCompat="@drawable/loading_animation" />
+
+                    <LinearLayout
+                        android:layout_height="match_parent"
+                        android:layout_width="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginStart="@dimen/small_margin"
+                        >
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@{viewModel.currentTrack.item.name.substring(0, Math.min(23, viewModel.currentTrack.item.name.length()))}"
+                            android:textSize="@dimen/medium_text"
+                            android:textStyle="bold"
+                            android:layout_marginTop="@dimen/extra_small_margin"
+                            />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@{viewModel.currentTrack.item.artists[0].name}"
+                            android:textSize="@dimen/small_text"
+                            android:layout_marginTop="@dimen/extra_small_margin"
+                            />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/top_tracks_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/extra_large_margin"
+                    android:layout_marginTop="@dimen/medium_margin"
+                    android:text="@string/top_tracks_4_weeks"
+                    android:textSize="@dimen/big_text"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/top_tracks_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/medium_margin"
+                    android:layout_marginTop="@dimen/small_margin"
+                    android:layout_marginEnd="@dimen/medium_margin"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    app:tracksList="@{viewModel.track.items}"
+                    android:visibility="gone"
+                    />
+
+                <TextView
+                    android:id="@+id/top_artists_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/extra_large_margin"
+                    android:layout_marginTop="@dimen/medium_margin"
+                    android:text="@string/top_artists_4_weeks"
+                    android:textSize="@dimen/big_text"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/top_artists_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/medium_margin"
+                    android:layout_marginTop="@dimen/small_margin"
+                    android:layout_marginEnd="@dimen/medium_margin"
+                    android:orientation="horizontal"
+                    app:artistsList="@{viewModel.artist.items}"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    android:visibility="gone"
+                    />
+
+                <TextView
+                    android:id="@+id/recently_played_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/extra_large_margin"
+                    android:layout_marginTop="@dimen/medium_margin"
+                    android:text="@string/recently_played_on_spotify"
+                    android:textSize="@dimen/big_text"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recently_played_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="@dimen/medium_margin"
+                    android:layout_marginTop="@dimen/small_margin"
+                    android:layout_marginEnd="@dimen/medium_margin"
+                    android:layout_marginBottom="@dimen/bottom_nav_margin"
+                    android:orientation="vertical"
+                    android:nestedScrollingEnabled="true"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    app:recentlyPlayedList="@{viewModel.recentlyPlayed.items}"
+                    android:visibility="gone"
+                    />
+
+            </LinearLayout>
+        </ScrollView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
