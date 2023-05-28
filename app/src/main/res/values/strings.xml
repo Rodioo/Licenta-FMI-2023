@@ -27,4 +27,8 @@
     <string name="join_game">Join game</string>
     <string name="guessify">Guessify</string>
     <string name="pwd_by">Pwd. by</string>
+    <string name="select_the_game_mode">Select the game mode</string>
+    <string name="music_genres">Music Genres</string>
+    <string name="most_listened_songs">Most Listened Songs</string>
+    <string name="most_listened_artists">Most Listened Artists</string>
 </resources>

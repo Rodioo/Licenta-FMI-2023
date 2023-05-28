@@ -52,8 +52,8 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
         coroutineScope.launch {
             if (accessToken?.value == null) {
                 accessToken = getAccessToken()
+                Log.e("profile_view", accessToken.toString())
             }
-            Log.e("profile", accessToken.toString())
             getCurrentUserProfile()
             getCurrentUserTopTracks()
             getCurrentUserTopArtists()
@@ -70,7 +70,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
 
     private fun getCurrentUserProfile() {
         coroutineScope.launch {
-            Log.e("profile_call", accessToken.toString())
+            Log.e("request", accessToken!!.value.toString())
             val response = GuessifyApi.retrofitService.getCurrentUserProfile("Bearer ${accessToken!!.value}")
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
@@ -80,7 +80,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
                 } else {
                     updateToken(true)
                     Log.e("getCurrentUserProfile_FAILURE", response.code().toString())
-                    Log.e("getCurrentUserProfile_FAILURE", response.message().toString())
+                    Log.e("getCurrentUserProfile_FAILURE", response.errorBody().toString())
                 }
             }
         }

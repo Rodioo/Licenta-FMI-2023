@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 private const val ACCESS_TOKEN_REFRESH_MARGIN: Long = 15 * 60 * 1000
 private const val ACCESS_TOKEN_REFRESH_INTERVAL: Long = 60 * 1000
 
+//TODO: add try/catch for error when user fails to connect to spotify api (no/bad internet)
 //TODO: refactor the code in here and inside login fragment (DRY)
 class MainActivity : AppCompatActivity() {
 
@@ -82,7 +83,7 @@ class MainActivity : AppCompatActivity() {
         viewModel.accessToken.observe(this) { accessToken ->
             val currentTime = System.currentTimeMillis()
             if (accessToken != null && accessToken.expiresAt > currentTime + ACCESS_TOKEN_REFRESH_MARGIN && !accessToken.needsRefresh) {
-                Log.e("ceva", "1")
+                Log.e("ceva1", "1")
                 navController.navigate(R.id.profileFragment)
             } else {
                 try {
@@ -98,11 +99,15 @@ class MainActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
 
-        viewModel.accessToken.value?.value?.let { viewModel.saveAccessToken(it) }
+        viewModel.accessToken.value?.value?.let {
+            Log.e("ceva", it)
+            viewModel.saveAccessToken(it)
+        }
     }
 
     private fun reinitializeAccessToken() {
         val currentTime = System.currentTimeMillis()
+
         if (viewModel.accessToken.value?.value == null
             || viewModel.accessToken.value!!.expiresAt <= currentTime + ACCESS_TOKEN_REFRESH_MARGIN
             || viewModel.accessToken.value!!.needsRefresh) {
@@ -122,7 +127,7 @@ class MainActivity : AppCompatActivity() {
             val response = AuthorizationClient.getResponse(result.resultCode, result.data)
             when (response.type) {
                 AuthorizationResponse.Type.TOKEN -> {
-                    viewModel.saveAccessToken(response.accessToken)
+                    viewModel.saveAndGetAccessToken(response.accessToken)
                     Toast.makeText(this, "Reinitialized Spotify Connection", Toast.LENGTH_SHORT).show()
                     navController.navigate(R.id.profileFragment)
                 }

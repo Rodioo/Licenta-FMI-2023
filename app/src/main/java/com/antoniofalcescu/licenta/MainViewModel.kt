@@ -13,7 +13,7 @@ import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDao
 import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDatabase
 import kotlinx.coroutines.*
 
-private const val TOKEN_REFRESH_TIMER_REQUEST = 2000L
+private const val TOKEN_REFRESH_TIMER_REQUEST = 5000L
 
 class MainViewModel(application: Application): AndroidViewModel(application) {
 
@@ -33,8 +33,9 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
             _accessToken.postValue(token)
 
             while(true) {
+                token = getAccessToken()
+
                 if (_accessToken.value?.needsRefresh == true) {
-                    token = getAccessToken()
                     _accessToken.postValue(token)
                 }
                 delay(TOKEN_REFRESH_TIMER_REQUEST)
@@ -52,6 +53,16 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         dbScope.launch {
             val accessToken = AccessToken(value = token)
             accessTokenDao.save(accessToken)
+        }
+    }
+
+    fun saveAndGetAccessToken(token: String) {
+        dbScope.launch {
+            val accessToken = AccessToken(value = token)
+            accessTokenDao.save(accessToken)
+            withContext(Dispatchers.Main) {
+                _accessToken.value = accessToken
+            }
         }
     }
 }
