@@ -5,6 +5,10 @@ import androidx.core.net.toUri
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.antoniofalcescu.licenta.R
+import com.antoniofalcescu.licenta.game.UserAdapter
+import com.antoniofalcescu.licenta.home.GenreAdapter
+import com.antoniofalcescu.licenta.home.GenreItem
+import com.antoniofalcescu.licenta.home.User
 import com.antoniofalcescu.licenta.profile.recentlyPlayedTracks.RecentlyPlayedTrackItem
 import com.antoniofalcescu.licenta.profile.artists.ArtistItem
 import com.antoniofalcescu.licenta.profile.artists.ArtistsAdapter
@@ -73,5 +77,17 @@ fun bindArtistsRecyclerView(recyclerView: RecyclerView, data: List<ArtistItem>?)
 @BindingAdapter("recentlyPlayedList")
 fun bindRecentlyPlayedRecyclerView(recyclerView: RecyclerView, data: List<RecentlyPlayedTrackItem>?) {
     val adapter = recyclerView.adapter as RecentlyPlayedAdapter
+    adapter.submitList(data)
+}
+
+@BindingAdapter("genresList")
+fun bindGenresRecyclerView(recyclerView: RecyclerView, data: List<GenreItem>?) {
+    val adapter = recyclerView.adapter as GenreAdapter
+    adapter.submitList(data)
+}
+
+@BindingAdapter("usersList")
+fun bindUsersRecyclerView(recyclerView: RecyclerView, data: List<User?>?) {
+    val adapter = recyclerView.adapter as UserAdapter
     adapter.submitList(data)
 }

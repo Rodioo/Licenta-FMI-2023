@@ -31,4 +31,8 @@
     <string name="music_genres">Music Genres</string>
     <string name="most_listened_songs">Most Listened Songs</string>
     <string name="most_listened_artists">Most Listened Artists</string>
+    <string name="choose_a_genre">Choose a genre</string>
+    <string name="game_room">Game Room</string>
+    <string name="game_mode">Game Mode:</string>
+    <string name="game_pin">Game PIN</string>
 </resources>

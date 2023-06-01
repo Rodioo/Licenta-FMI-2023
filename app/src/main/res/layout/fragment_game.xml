@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <variable
+            name="viewModel"
+            type="com.antoniofalcescu.licenta.game.GameViewModel"
+            />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".game.GameFragment">
+
+        <LinearLayout
+            android:id="@+id/title_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/top_title_margin"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.496"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/guessify_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/guessify"
+                android:textSize="@dimen/title_text"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="96dp"
+                android:layout_marginTop="@dimen/extra_small_margin">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="@dimen/extra_small_margin"
+                    android:text="@string/pwd_by"
+                    android:textSize="@dimen/small_text"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="64dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="@dimen/extra_small_margin"
+                    android:src="@drawable/spotify_logo_white" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:id="@+id/separator"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginStart="@dimen/extra_large_margin"
+            android:layout_marginTop="@dimen/extra_large_margin"
+            android:layout_marginEnd="@dimen/extra_large_margin"
+            android:background="@color/md_theme_dark_primary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/title_layout" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:layout_marginTop="@dimen/extra_large_margin"
+            android:layout_marginStart="@dimen/medium_margin"
+            android:layout_marginBottom="@dimen/bottom_nav_margin"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/separator"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/game_pin"
+                android:layout_gravity="center_horizontal"
+                android:textSize="@dimen/big_text"
+                android:textStyle="bold"
+
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{viewModel.roomCode}"
+                android:layout_gravity="center_horizontal"
+                android:textSize="@dimen/title_text"
+                android:textStyle="bold"
+                />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/small_margin">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/game_mode"
+                    android:textSize="@dimen/medium_text"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@{viewModel.gameMode}"
+                    android:textSize="@dimen/medium_text"
+                    android:textAllCaps="true"
+                    android:textStyle="bold"
+                    android:layout_marginStart="@dimen/small_margin"
+                    />
+
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/users_recycler"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_marginTop="@dimen/medium_margin"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                app:usersList="@{viewModel.users}"
+                app:spanCount="2"
+                />
+
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

@@ -40,7 +40,7 @@ class ProfileFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
-        tracksAdapter = TracksAdapter() {
+        tracksAdapter = TracksAdapter {
             trackUrl -> openSpotifyLink(trackUrl)
         }
         binding.topTracksRecycler.adapter = tracksAdapter

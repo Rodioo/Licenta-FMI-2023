@@ -142,6 +142,7 @@ class DiscoverFragment : Fragment() {
             override fun handleOnBackPressed() {
                 if (recommendedBasedOn == "tracks" || recommendedBasedOn == "artists") {
                     recommendedBasedOn = "none"
+                    stopSongSample()
                     discoverUtilsUI.updateUIDiscoverAgain()
                 }
             }
@@ -202,6 +203,11 @@ class DiscoverFragment : Fragment() {
         super.onSaveInstanceState(outState)
         outState.putBoolean("areRecommendedSongsVisible", areRecommendedSongsVisible)
         outState.putString("recommendedBasedOn", recommendedBasedOn)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        stopSongSample()
     }
 
     override fun onDestroy() {

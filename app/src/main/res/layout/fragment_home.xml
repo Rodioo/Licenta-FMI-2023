@@ -130,7 +130,7 @@
                 android:textAllCaps="true"/>
 
             <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/categories_game_button"
+                android:id="@+id/genres_game_button"
                 style="@style/button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -197,7 +197,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:minValue="@{1}"
+                    android:minValue="@{0}"
                     android:maxValue="@{9}" />
 
                 <NumberPicker
@@ -239,6 +239,43 @@
                 android:textAllCaps="true"
                 android:textSize="@dimen/button_big_text_size" />
         </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/genres_view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="@dimen/medium_margin"
+            android:layout_marginTop="@dimen/medium_margin"
+            android:layout_marginEnd="@dimen/medium_margin"
+            android:layout_marginBottom="@dimen/bottom_nav_margin"
+            android:orientation="vertical"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/separator">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/choose_a_genre"
+                android:textSize="@dimen/big_text"
+                android:textStyle="bold"
+                android:textAllCaps="true"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/genres_recycler"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_marginTop="@dimen/medium_margin"
+                app:genresList="@{viewModel.genres.items}"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                app:spanCount="2" />
+        </LinearLayout>
+
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -29,12 +29,18 @@ fun Context.getSpacing(dimen: Spacing): Int {
     }
 }
 
-class RecyclerViewSpacing(private val space: Int, private val orientation: Orientation) : RecyclerView.ItemDecoration() {
+class RecyclerViewSpacing(private val space: Int, private val orientation: Orientation, private val includeLast: Boolean = false) : RecyclerView.ItemDecoration() {
 
     override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
         super.getItemOffsets(outRect, view, parent, state)
 
         if (parent.getChildAdapterPosition(view) != parent.adapter?.itemCount?.minus(1)) {
+            if (orientation == Orientation.HORIZONTAL) {
+                outRect.right = space
+            } else if (orientation == Orientation.VERTICAL) {
+                outRect.bottom = space
+            }
+        } else if (includeLast) {
             if (orientation == Orientation.HORIZONTAL) {
                 outRect.right = space
             } else if (orientation == Orientation.VERTICAL) {

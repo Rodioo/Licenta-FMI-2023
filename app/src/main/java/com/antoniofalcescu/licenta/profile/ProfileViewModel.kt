@@ -10,10 +10,9 @@ import com.antoniofalcescu.licenta.profile.currentlyPlayingTrack.CurrentlyPlayin
 import com.antoniofalcescu.licenta.profile.recentlyPlayedTracks.RecentlyPlayedTrack
 import com.antoniofalcescu.licenta.profile.tracks.Track
 import com.antoniofalcescu.licenta.repository.GuessifyApi
-import com.antoniofalcescu.licenta.repository.accessToken.AccessToken
-import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDao
-import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDatabase
+import com.antoniofalcescu.licenta.repository.accessToken.*
 import kotlinx.coroutines.*
+import java.net.SocketTimeoutException
 
 //TODO: Look for a way to reduce the workload on the UI thread
 class ProfileViewModel(application: Application): AndroidViewModel(application) {
@@ -51,20 +50,13 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
 
         coroutineScope.launch {
             if (accessToken?.value == null) {
-                accessToken = getAccessToken()
-                Log.e("profile_view", accessToken.toString())
+                accessToken = getAccessToken(accessTokenDao)
             }
             getCurrentUserProfile()
             getCurrentUserTopTracks()
             getCurrentUserTopArtists()
             getCurrentUserRecentlyPlayedTracks()
             getCurrentUserCurrentlyPlayingTrack()
-        }
-    }
-
-    private suspend fun getAccessToken(): AccessToken {
-        return withContext(dbScope.coroutineContext) {
-            accessTokenDao.get()
         }
     }
 
@@ -76,9 +68,9 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
                 if (response.isSuccessful) {
                     Log.e("getCurrentUserProfile_SUCCESS", response.body().toString())
                     _profile.value = response.body()
-                    updateToken(false)
+                    updateToken(accessTokenDao, false)
                 } else {
-                    updateToken(true)
+                    updateToken(accessTokenDao, true)
                     Log.e("getCurrentUserProfile_FAILURE", response.code().toString())
                     Log.e("getCurrentUserProfile_FAILURE", response.errorBody().toString())
                 }
@@ -140,24 +132,25 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     private fun getCurrentUserCurrentlyPlayingTrack() {
         coroutineScope.launch {
             while(true) {
-                val response = GuessifyApi.retrofitService.getCurrentUserCurrentlyPlayingTrack("Bearer ${accessToken!!.value}")
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful) {
-                        Log.e("getCurrentUserCurrentlyPlayedTrack_SUCCESS", response.body().toString())
-                        _currentTrack.value = response.body()
-                    } else {
-                        Log.e("getCurrentUserCurrentlyPlayedTrack_FAILURE", response.code().toString())
-                        Log.e("getCurrentUserCurrentlyPlayedTrack_FAILURE", response.errorBody().toString())
+                try {
+                    val response = GuessifyApi.retrofitService.getCurrentUserCurrentlyPlayingTrack("Bearer ${accessToken!!.value}")
+                    withContext(Dispatchers.Main) {
+                        if (response.isSuccessful) {
+                            Log.e("getCurrentUserCurrentlyPlayedTrack_SUCCESS", response.body().toString())
+                            _currentTrack.value = response.body()
+                            updateToken(accessTokenDao, false)
+                        } else {
+                            updateToken(accessTokenDao, true)
+                            Log.e("getCurrentUserCurrentlyPlayedTrack_FAILURE", response.code().toString())
+                            Log.e("getCurrentUserCurrentlyPlayedTrack_FAILURE", response.errorBody().toString())
+                        }
                     }
+                } catch (e: SocketTimeoutException) {
+                    Log.e("getCurrentUserCurrentlyPlayedTrack_TIMEOUT", e.message.toString())
+                    // Handle the timeout exception here, you can log or perform any necessary actions
                 }
                 delay(5_000L)
             }
-        }
-    }
-
-    private fun updateToken(needsRefresh: Boolean) {
-        dbScope.launch {
-            accessTokenDao.updateRefresh(needsRefresh)
         }
     }
 

@@ -1,6 +1,7 @@
 package com.antoniofalcescu.licenta.repository
 
 import com.antoniofalcescu.licenta.discover.DiscoverTrack
+import com.antoniofalcescu.licenta.home.AvailableGenre
 import com.antoniofalcescu.licenta.profile.Profile
 import com.antoniofalcescu.licenta.profile.recentlyPlayedTracks.RecentlyPlayedTrack
 import com.antoniofalcescu.licenta.profile.artists.Artist
@@ -61,6 +62,12 @@ interface GuessifyApiService {
         @Query("seed_tracks") tracksId: String = "",
         @Query("limit") limit: Int = 1
     ): Response<DiscoverTrack>
+
+    @GET(value= "browse/categories")
+    suspend fun getGenres(
+        @Header("Authorization") accessToken: String,
+        @Query("limit") limit: Int = 30
+    ): Response<AvailableGenre>
 }
 
 object GuessifyApi {

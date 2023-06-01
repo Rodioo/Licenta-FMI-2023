@@ -12,3 +12,4 @@ data class SpotifyImage(
 data class SpotifyUrl(
     val spotify: String
 )
+

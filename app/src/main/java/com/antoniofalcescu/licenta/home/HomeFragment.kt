@@ -1,18 +1,21 @@
 package com.antoniofalcescu.licenta.home
 
-import android.opengl.Visibility
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
-import com.antoniofalcescu.licenta.R
-import com.antoniofalcescu.licenta.databinding.FragmentDiscoverBinding
+import androidx.navigation.findNavController
 import com.antoniofalcescu.licenta.databinding.FragmentHomeBinding
-import com.antoniofalcescu.licenta.discover.DiscoverViewModel
-import com.antoniofalcescu.licenta.discover.DiscoverViewModelFactory
+import com.antoniofalcescu.licenta.profile.tracks.TracksAdapter
+import com.antoniofalcescu.licenta.utils.Orientation
+import com.antoniofalcescu.licenta.utils.RecyclerViewSpacing
+import com.antoniofalcescu.licenta.utils.Spacing
+import com.antoniofalcescu.licenta.utils.getSpacing
+import com.google.firebase.firestore.FirebaseFirestore
 
 class HomeFragment : Fragment() {
 
@@ -20,6 +23,7 @@ class HomeFragment : Fragment() {
     private lateinit var viewModel: HomeViewModel
     private lateinit var viewModelFactory: HomeViewModelFactory
 
+    private lateinit var genresAdapter: GenreAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,8 +36,29 @@ class HomeFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
-        binding.createGameButton.setOnClickListener { createGameHandler() }
-        binding.joinGameButton.setOnClickListener { joinGameHandler() }
+        genresAdapter = GenreAdapter {genreName ->
+            view?.findNavController()?.navigate(
+                HomeFragmentDirections.actionHomeFragmentToGameFragment(genreName)
+            )
+        }
+
+        binding.genresRecycler.adapter = genresAdapter
+        binding.genresRecycler.addItemDecoration(
+            RecyclerViewSpacing(requireContext().getSpacing(Spacing.SMALL), Orientation.VERTICAL)
+        )
+
+        binding.createGameButton.setOnClickListener {
+            createGameHandler()
+        }
+        binding.joinGameButton.setOnClickListener {
+            joinGameHandler()
+        }
+
+        binding.genresGameButton.setOnClickListener {
+            binding.createGameLayout.visibility = View.GONE
+            viewModel.getGameGenres()
+            binding.genresView.visibility = View.VISIBLE
+        }
 
         val backButtonCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -64,6 +89,9 @@ class HomeFragment : Fragment() {
         else if (binding.joinGameLayout.visibility == View.VISIBLE) {
             binding.joinGameLayout.visibility = View.GONE
             binding.startGameLayout.visibility = View.VISIBLE
+        } else if (binding.genresView.visibility == View.VISIBLE) {
+            binding.genresView.visibility = View.GONE
+            binding.createGameLayout.visibility = View.VISIBLE
         }
     }
 }
