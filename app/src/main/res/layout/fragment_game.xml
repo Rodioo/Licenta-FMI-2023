@@ -94,7 +94,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{viewModel.roomCode}"
+                android:text="@{viewModel.room.code}"
                 android:layout_gravity="center_horizontal"
                 android:textSize="@dimen/title_text"
                 android:textStyle="bold"
@@ -118,7 +118,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:text="@{viewModel.gameMode}"
+                    android:text="@{viewModel.room.gamemode}"
                     android:textSize="@dimen/medium_text"
                     android:textAllCaps="true"
                     android:textStyle="bold"

@@ -24,6 +24,7 @@ import com.antoniofalcescu.licenta.utils.getSpacing
 //TODO: de adaugat flow-ul pentru creare joc din artists/tracks
 //TODO: de adaugat flow pt join la joc
 //TODO: de adaugat business logic si adaugat camera in bd
+//TODO: add delete room after 15 mins or some timer
 class GameFragment : Fragment() {
 
     private lateinit var binding: FragmentGameBinding
@@ -60,6 +61,14 @@ class GameFragment : Fragment() {
                 users -> usersAdapter.submitList(users)
         }
 
+        viewModel.currentUser.observe(viewLifecycleOwner) {
+            viewModel.addUser()
+        }
+
+        viewModel.room.observe(viewLifecycleOwner) {
+            viewModel.addRoom()
+        }
+
         val backButtonCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 view?.findNavController()?.navigate(
@@ -68,21 +77,10 @@ class GameFragment : Fragment() {
             }
         }
 
+
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, backButtonCallback)
 
 
         return binding.root
-    }
-
-    override fun onStart() {
-        super.onStart()
-        viewModel.currentUser.observe(viewLifecycleOwner) {
-            viewModel.addUser()
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        viewModel.deleteUser()
     }
 }

@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
+import com.antoniofalcescu.licenta.R
 import com.antoniofalcescu.licenta.databinding.FragmentHomeBinding
 import com.antoniofalcescu.licenta.profile.tracks.TracksAdapter
 import com.antoniofalcescu.licenta.utils.Orientation
@@ -58,6 +59,23 @@ class HomeFragment : Fragment() {
             binding.createGameLayout.visibility = View.GONE
             viewModel.getGameGenres()
             binding.genresView.visibility = View.VISIBLE
+        }
+
+        binding.topTracksGameButton.setOnClickListener {
+            binding.createGameLayout.visibility = View.GONE
+            view?.findNavController()?.navigate(
+                HomeFragmentDirections.actionHomeFragmentToGameFragment(
+                   resources.getString(R.string.most_listened_songs))
+            )
+        }
+
+        binding.topArtistsGameButton.setOnClickListener {
+            binding.createGameLayout.visibility = View.GONE
+            view?.findNavController()?.navigate(
+                HomeFragmentDirections.actionHomeFragmentToGameFragment(
+                    resources.getString(R.string.most_listened_artists)
+                )
+            )
         }
 
         val backButtonCallback = object : OnBackPressedCallback(true) {

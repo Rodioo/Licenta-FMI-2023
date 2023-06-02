@@ -11,6 +11,8 @@ import com.antoniofalcescu.licenta.profile.recentlyPlayedTracks.RecentlyPlayedTr
 import com.antoniofalcescu.licenta.profile.tracks.Track
 import com.antoniofalcescu.licenta.repository.GuessifyApi
 import com.antoniofalcescu.licenta.repository.accessToken.*
+import com.antoniofalcescu.licenta.utils.EMPTY_PROFILE_IMAGE_URL
+import com.antoniofalcescu.licenta.utils.SpotifyImage
 import kotlinx.coroutines.*
 import java.net.SocketTimeoutException
 
@@ -68,6 +70,14 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
                 if (response.isSuccessful) {
                     Log.e("getCurrentUserProfile_SUCCESS", response.body().toString())
                     _profile.value = response.body()
+
+                    val imageUrl = if (response.body()?.images?.size == 0) {
+                        EMPTY_PROFILE_IMAGE_URL
+                    } else {
+                        response.body()?.images?.get(0)?.url ?: EMPTY_PROFILE_IMAGE_URL
+                    }
+
+                    _profile.value = _profile.value?.copy(images = listOf(SpotifyImage(imageUrl)))
                     updateToken(accessTokenDao, false)
                 } else {
                     updateToken(accessTokenDao, true)

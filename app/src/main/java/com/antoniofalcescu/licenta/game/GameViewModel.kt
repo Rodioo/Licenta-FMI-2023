@@ -8,12 +8,13 @@ import androidx.lifecycle.MutableLiveData
 import com.antoniofalcescu.licenta.home.User
 import com.antoniofalcescu.licenta.repository.GuessifyApi
 import com.antoniofalcescu.licenta.repository.accessToken.*
+import com.antoniofalcescu.licenta.utils.EMPTY_PROFILE_IMAGE_URL
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.*
 import kotlin.random.Random
 
-class GameViewModel(application: Application, val gameMode: String): AndroidViewModel(application) {
+class GameViewModel(application: Application, private val gameMode: String): AndroidViewModel(application) {
 
     private val firebase = FirebaseFirestore.getInstance()
 
@@ -37,9 +38,9 @@ class GameViewModel(application: Application, val gameMode: String): AndroidView
 
     private val usedRoomCodes = mutableSetOf<String>()
 
-    private val _roomCode = MutableLiveData<String>()
-    val roomCode: LiveData<String>
-        get() = _roomCode
+    private val _room = MutableLiveData<Room>()
+    val room: LiveData<Room>
+        get() = _room
 
     init {
         FirebaseApp.initializeApp(application)
@@ -51,9 +52,8 @@ class GameViewModel(application: Application, val gameMode: String): AndroidView
                 accessToken = getAccessToken(accessTokenDao)
             }
             getCurrentUser()
-            getUsedCodes()
+            createRoom()
         }
-        Log.e("viewModel", gameMode)
     }
 
     private fun getCurrentUser() {
@@ -63,11 +63,18 @@ class GameViewModel(application: Application, val gameMode: String): AndroidView
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Log.e("getCurrentUser_SUCCESS", response.body().toString())
+
+                    val imageUrl = if (response.body()?.images?.size == 0) {
+                        EMPTY_PROFILE_IMAGE_URL
+                    } else {
+                        response.body()?.images?.get(0)?.url ?: EMPTY_PROFILE_IMAGE_URL
+                    }
+
                     val userAux = User(
                         id_spotify = response.body()!!.id,
                         token = accessToken!!.value!!,
                         name = response.body()!!.display_name,
-                        image_url = response.body()!!.images[0].url,
+                        image_url = imageUrl
                     )
                     _currentUser.value = userAux
 
@@ -86,7 +93,6 @@ class GameViewModel(application: Application, val gameMode: String): AndroidView
     }
 
     fun addUser() {
-        Log.e("user", _currentUser.value.toString())
         if (_currentUser.value != null) {
             firebase.collection("users").add(_currentUser.value!!)
                 .addOnSuccessListener {
@@ -102,7 +108,6 @@ class GameViewModel(application: Application, val gameMode: String): AndroidView
     }
 
     fun deleteUser() {
-        Log.e("delete", _currentUser.value.toString())
         if (_currentUser.value != null) {
             firebase.collection("users").whereEqualTo("id_spotify", _currentUser.value!!.id_spotify).get()
                 .addOnSuccessListener { querySnapshot ->
@@ -124,7 +129,7 @@ class GameViewModel(application: Application, val gameMode: String): AndroidView
         }
     }
 
-    private fun getUsedCodes() {
+    private fun createRoom() {
         firebase.collection("rooms").get()
             .addOnSuccessListener {querySnapshot ->
                 for (document in querySnapshot.documents) {
@@ -133,18 +138,23 @@ class GameViewModel(application: Application, val gameMode: String): AndroidView
                         usedRoomCodes.add(code)
                     }
                 }
-                generateRoomCode(usedRoomCodes)
+
+                val roomAux = Room(
+                    generateRoomCode(usedRoomCodes),
+                    gameMode,
+                    mutableListOf(_currentUser.value?.id_spotify).filterNotNull()
+                )
+                _room.value = roomAux
             }
             .addOnFailureListener {exception ->
                 _error.value = exception.message
             }
     }
 
-    private fun generateRoomCode(existingCodes: Set<String>) {
+    private fun generateRoomCode(existingCodes: Set<String>): String {
         val random = Random
         val stringBuilder = StringBuilder()
         var randomString: String
-        Log.e("viewModel", existingCodes.toString())
         do {
             stringBuilder.clear()
 
@@ -156,6 +166,43 @@ class GameViewModel(application: Application, val gameMode: String): AndroidView
             randomString = stringBuilder.toString()
         } while (existingCodes.contains(randomString))
 
-        _roomCode.value = randomString
+        return randomString
+    }
+
+    fun addRoom() {
+        if (_room.value != null) {
+            firebase.collection("rooms").add(_room.value!!)
+                .addOnSuccessListener {
+                    Log.i("addedRoom", _room.value.toString())
+                }
+                .addOnFailureListener {exception ->
+                    Log.e("HomeViewModel",
+                        "Failed to add room: ${_room.value!!.code}: ${exception.message}"
+                    )
+                    _error.value = exception.message
+                }
+        }
+    }
+
+    fun deleteRoom() {
+        if (_room.value != null) {
+            firebase.collection("rooms").whereEqualTo("code", _room.value!!.code).get()
+                .addOnSuccessListener { querySnapshot ->
+                    for (document in querySnapshot.documents) {
+                        document.reference.delete()
+                            .addOnSuccessListener {
+                                Log.i("HomeViewModel",
+                                    "Room: ${_room.value?.code} deleted successfully"
+                                )
+                            }
+                            .addOnFailureListener { exception ->
+                                _error.value = exception.message
+                                Log.i("HomeViewModel",
+                                    "Failed to delete room ${_room.value?.code}: ${exception.message}"
+                                )
+                            }
+                    }
+                }
+        }
     }
 }
