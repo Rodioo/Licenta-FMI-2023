@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.antoniofalcescu.licenta.R
 import com.antoniofalcescu.licenta.databinding.UserItemViewBinding
 import com.antoniofalcescu.licenta.home.User
 
@@ -25,6 +26,7 @@ class UserAdapter(
 
         fun bindEmptyUser() {
             binding.kickUserButton.visibility = View.GONE
+            binding.profileImage.setImageResource(R.drawable.baseline_person_add_alt_1_24)
             binding.user = null
             binding.executePendingBindings()
         }

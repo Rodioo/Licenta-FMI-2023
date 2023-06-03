@@ -89,8 +89,9 @@ class Firebase(application: Application) {
 
             if (roomSnapshot.exists()) {
                 val userList = roomSnapshot.toObject(Room::class.java)?.users?.toMutableList()
-                userList?.add(userId)
-
+                if (userList != null && !userList.contains(userId)) {
+                    userList.add(userId)
+                }
                 transaction.update(roomRef, "users", userList)
             } else {
                 // Room doesn't exist
@@ -164,6 +165,28 @@ class Firebase(application: Application) {
                     usedRoomCodes.add(code)
                 }
                 deferred.complete(usedRoomCodes)
+            }
+            .addOnFailureListener { exception ->
+                deferred.completeExceptionally(exception)
+            }
+
+        return deferred
+    }
+
+    fun getUsersFromRoom(roomCode: String): CompletableDeferred<List<String>> {
+        val deferred = CompletableDeferred<List<String>>()
+
+        firebaseInstance.collection("rooms")
+            .document(roomCode)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    val room = documentSnapshot.toObject(Room::class.java)
+                    val users = room?.users ?: emptyList()
+                    deferred.complete(users)
+                } else {
+                    deferred.complete(emptyList())
+                }
             }
             .addOnFailureListener { exception ->
                 deferred.completeExceptionally(exception)

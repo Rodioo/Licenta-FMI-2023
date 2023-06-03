@@ -175,6 +175,7 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
                     _error.value = exception.message
                 }
             }
+            Log.e("room", _room.value.toString())
         }
     }
 
@@ -188,7 +189,6 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
                         _error.value = joinRoomDeferred.getCompletionExceptionOrNull()?.message
                     } else {
                         _room.value = joinRoomResult
-                        Log.e("new room", joinRoomResult.toString())
                     }
                 } catch (exception: Exception) {
                     _error.value = exception.message

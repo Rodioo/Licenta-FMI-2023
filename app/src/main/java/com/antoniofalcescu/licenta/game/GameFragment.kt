@@ -61,6 +61,10 @@ class GameFragment : Fragment() {
                 users -> usersAdapter.submitList(users)
         }
 
+        viewModel.userIds.observe(viewLifecycleOwner) {
+            viewModel.getUsersProfiles()
+        }
+
         val backButtonCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 viewModel.currentUser.observe(viewLifecycleOwner) {

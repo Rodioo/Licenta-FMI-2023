@@ -33,6 +33,10 @@ class GameViewModel(application: Application, roomAux: Room): AndroidViewModel(a
     val currentUser: LiveData<User?>
         get() = _currentUser
 
+    private val _userIds = MutableLiveData<List<String>>()
+    val userIds: LiveData<List<String>>
+        get() = _userIds
+
     private val _users = MutableLiveData<List<User?>>()
     val users: LiveData<List<User?>>
         get() = _users
@@ -51,7 +55,10 @@ class GameViewModel(application: Application, roomAux: Room): AndroidViewModel(a
                 accessToken = getAccessToken(accessTokenDao)
             }
             getCurrentUser()
-            getUsersProfiles()
+            while(true) {
+                getUsersFromRoom()
+                delay(5000L)
+            }
         }
     }
 
@@ -85,24 +92,42 @@ class GameViewModel(application: Application, roomAux: Room): AndroidViewModel(a
         }
     }
 
-    private fun getUsersProfiles() {
+    fun getUsersProfiles() {
+        val usersAux = mutableListOf<User>()
         coroutineScope.launch {
-            if (_room.value != null) {
-                _room.value!!.users.map {idSpotify ->
+            if (_userIds.value != null) {
+                _userIds.value!!.map {idSpotify ->
                     val getUserDeferred = firebase.getUser(idSpotify)
                     try {
                         val getUserResult = getUserDeferred.await()
                         if (getUserResult == null) {
                             _error.value = getUserDeferred.getCompletionExceptionOrNull()?.message
                         } else {
-                            val currentList = _users.value?.toMutableList() ?: mutableListOf()
-                            currentList.add(getUserResult)
-                            _users.value = currentList
+                            usersAux.add(getUserResult)
+                            _users.value = usersAux
                         }
                     } catch (exception: Exception) {
                         _error.value = exception.message
                     }
 
+                }
+            }
+        }
+    }
+
+    private fun getUsersFromRoom() {
+        coroutineScope.launch {
+            if (_room.value != null) {
+                val getUsersFromRoomDeferred = firebase.getUsersFromRoom(_room.value!!.code)
+                try {
+                    val getUserFromRoomResult = getUsersFromRoomDeferred.await()
+                    if (getUserFromRoomResult.isEmpty()) {
+                        _error.value = getUsersFromRoomDeferred.getCompletionExceptionOrNull()?.message
+                    } else {
+                        _userIds.value = getUserFromRoomResult
+                    }
+                } catch (exception: Exception) {
+                    _error.value = exception.message
                 }
             }
         }
@@ -118,7 +143,7 @@ class GameViewModel(application: Application, roomAux: Room): AndroidViewModel(a
                         _error.value = leaveRoomDeferred.getCompletionExceptionOrNull()?.message
                     } else {
                         _room.value = leaveRoomResult
-                        Log.e("new room", leaveRoomResult.toString())
+                        _userIds.value = _room.value!!.users
                     }
                 } catch (exception: Exception) {
                     _error.value = exception.message

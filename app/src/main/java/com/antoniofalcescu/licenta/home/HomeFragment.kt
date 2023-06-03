@@ -41,9 +41,7 @@ class HomeFragment : Fragment() {
         binding.lifecycleOwner = viewLifecycleOwner
 
         genresAdapter = GenreAdapter {genreName ->
-            viewModel.user.observe(viewLifecycleOwner) {
-                viewModel.createRoom(genreName)
-            }
+            viewModel.createRoom(genreName)
         }
 
         binding.genresRecycler.adapter = genresAdapter
