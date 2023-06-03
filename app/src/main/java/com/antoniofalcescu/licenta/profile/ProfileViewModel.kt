@@ -5,14 +5,18 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.antoniofalcescu.licenta.home.User
 import com.antoniofalcescu.licenta.profile.artists.Artist
 import com.antoniofalcescu.licenta.profile.currentlyPlayingTrack.CurrentlyPlayingTrack
 import com.antoniofalcescu.licenta.profile.recentlyPlayedTracks.RecentlyPlayedTrack
 import com.antoniofalcescu.licenta.profile.tracks.Track
+import com.antoniofalcescu.licenta.repository.Firebase
 import com.antoniofalcescu.licenta.repository.GuessifyApi
 import com.antoniofalcescu.licenta.repository.accessToken.*
 import com.antoniofalcescu.licenta.utils.EMPTY_PROFILE_IMAGE_URL
 import com.antoniofalcescu.licenta.utils.SpotifyImage
+import com.google.firebase.FirebaseApp
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.*
 import java.net.SocketTimeoutException
 
@@ -34,7 +38,6 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     val track: LiveData<Track>
         get() = _track
 
-
     private val _artist = MutableLiveData<Artist>()
     val artist: LiveData<Artist>
         get() = _artist
@@ -47,7 +50,12 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     val currentTrack: LiveData<CurrentlyPlayingTrack>
         get() = _currentTrack
 
+    private val _error = MutableLiveData<String>()
+    val error: LiveData<String>
+        get() = _error
+
     init {
+
         accessTokenDao = AccessTokenDatabase.getInstance(application).accessTokenDao
 
         coroutineScope.launch {
@@ -64,7 +72,6 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
 
     private fun getCurrentUserProfile() {
         coroutineScope.launch {
-            Log.e("request", accessToken!!.value.toString())
             val response = GuessifyApi.retrofitService.getCurrentUserProfile("Bearer ${accessToken!!.value}")
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
@@ -78,6 +85,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
                     }
 
                     _profile.value = _profile.value?.copy(images = listOf(SpotifyImage(imageUrl)))
+
                     updateToken(accessTokenDao, false)
                 } else {
                     updateToken(accessTokenDao, true)

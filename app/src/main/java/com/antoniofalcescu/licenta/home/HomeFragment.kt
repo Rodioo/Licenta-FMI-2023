@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.NumberPicker
 import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
@@ -26,6 +27,8 @@ class HomeFragment : Fragment() {
 
     private lateinit var genresAdapter: GenreAdapter
 
+    private var roomCode = "0000"
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -38,9 +41,9 @@ class HomeFragment : Fragment() {
         binding.lifecycleOwner = viewLifecycleOwner
 
         genresAdapter = GenreAdapter {genreName ->
-            view?.findNavController()?.navigate(
-                HomeFragmentDirections.actionHomeFragmentToGameFragment(genreName)
-            )
+            viewModel.user.observe(viewLifecycleOwner) {
+                viewModel.createRoom(genreName)
+            }
         }
 
         binding.genresRecycler.adapter = genresAdapter
@@ -63,18 +66,28 @@ class HomeFragment : Fragment() {
 
         binding.topTracksGameButton.setOnClickListener {
             binding.createGameLayout.visibility = View.GONE
-            view?.findNavController()?.navigate(
-                HomeFragmentDirections.actionHomeFragmentToGameFragment(
-                   resources.getString(R.string.most_listened_songs))
-            )
+            viewModel.user.observe(viewLifecycleOwner) {
+                viewModel.createRoom(resources.getString(R.string.most_listened_songs))
+            }
         }
 
         binding.topArtistsGameButton.setOnClickListener {
             binding.createGameLayout.visibility = View.GONE
+            viewModel.user.observe(viewLifecycleOwner) {
+                viewModel.createRoom(resources.getString(R.string.most_listened_artists))
+            }
+        }
+
+        binding.joinGameCodeButton.setOnClickListener {
+            Log.e("ceva", roomCode)
+            viewModel.user.observe(viewLifecycleOwner) {
+                viewModel.joinRoom(roomCode)
+            }
+        }
+
+        viewModel.room.observe(viewLifecycleOwner) {room->
             view?.findNavController()?.navigate(
-                HomeFragmentDirections.actionHomeFragmentToGameFragment(
-                    resources.getString(R.string.most_listened_artists)
-                )
+                HomeFragmentDirections.actionHomeFragmentToGameFragment(room!!)
             )
         }
 
@@ -97,6 +110,7 @@ class HomeFragment : Fragment() {
     private fun joinGameHandler() {
         binding.startGameLayout.visibility = View.GONE
         binding.joinGameLayout.visibility = View.VISIBLE
+        getRoomCode()
     }
 
     private fun resetUI() {
@@ -110,6 +124,31 @@ class HomeFragment : Fragment() {
         } else if (binding.genresView.visibility == View.VISIBLE) {
             binding.genresView.visibility = View.GONE
             binding.createGameLayout.visibility = View.VISIBLE
+        }
+    }
+
+    private fun getRoomCode() {
+        val codeValues = mutableListOf("0", "0", "0", "0")
+        fun onRoomCodeValueChanged(numberPicker: NumberPicker, oldValue: Int, newValue: Int) {
+            when (numberPicker.id) {
+                R.id.first_digit_room_code_picker -> codeValues[0] = newValue.toString()
+                R.id.second_digit_room_code_picker -> codeValues[1] = newValue.toString()
+                R.id.third_digit_room_code_picker -> codeValues[2] = newValue.toString()
+                R.id.fourth_digit_room_code_picker -> codeValues[3] = newValue.toString()
+            }
+            roomCode = codeValues.joinToString("")
+        }
+
+        binding.firstDigitRoomCodePicker.setOnValueChangedListener(::onRoomCodeValueChanged)
+        binding.secondDigitRoomCodePicker.setOnValueChangedListener(::onRoomCodeValueChanged)
+        binding.thirdDigitRoomCodePicker.setOnValueChangedListener(::onRoomCodeValueChanged)
+        binding.fourthDigitRoomCodePicker.setOnValueChangedListener(::onRoomCodeValueChanged)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        viewModel.user.observe(viewLifecycleOwner) {
+            viewModel.addUser()
         }
     }
 }

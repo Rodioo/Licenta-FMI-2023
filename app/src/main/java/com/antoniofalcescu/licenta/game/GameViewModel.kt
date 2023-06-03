@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.antoniofalcescu.licenta.home.User
+import com.antoniofalcescu.licenta.repository.Firebase
 import com.antoniofalcescu.licenta.repository.GuessifyApi
 import com.antoniofalcescu.licenta.repository.accessToken.*
 import com.antoniofalcescu.licenta.utils.EMPTY_PROFILE_IMAGE_URL
@@ -14,9 +15,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.*
 import kotlin.random.Random
 
-class GameViewModel(application: Application, private val gameMode: String): AndroidViewModel(application) {
+class GameViewModel(application: Application, roomAux: Room): AndroidViewModel(application) {
 
-    private val firebase = FirebaseFirestore.getInstance()
+    private var firebase: Firebase
 
     private var viewModelJob: Job = Job()
     private var coroutineScope: CoroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
@@ -36,14 +37,12 @@ class GameViewModel(application: Application, private val gameMode: String): And
     val users: LiveData<List<User?>>
         get() = _users
 
-    private val usedRoomCodes = mutableSetOf<String>()
-
-    private val _room = MutableLiveData<Room>()
+    private val _room = MutableLiveData(roomAux)
     val room: LiveData<Room>
         get() = _room
 
     init {
-        FirebaseApp.initializeApp(application)
+        firebase = Firebase(application)
 
         accessTokenDao = AccessTokenDatabase.getInstance(application).accessTokenDao
 
@@ -52,13 +51,12 @@ class GameViewModel(application: Application, private val gameMode: String): And
                 accessToken = getAccessToken(accessTokenDao)
             }
             getCurrentUser()
-            createRoom()
+            getUsersProfiles()
         }
     }
 
     private fun getCurrentUser() {
         coroutineScope.launch {
-            Log.e("request", accessToken!!.value.toString())
             val response = GuessifyApi.retrofitService.getCurrentUserProfile("Bearer ${accessToken!!.value}")
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
@@ -77,11 +75,6 @@ class GameViewModel(application: Application, private val gameMode: String): And
                         image_url = imageUrl
                     )
                     _currentUser.value = userAux
-
-                    val currentUsers = _users.value?.toMutableList() ?: mutableListOf()
-                    currentUsers.add(userAux)
-
-                    _users.postValue(currentUsers)
                     updateToken(accessTokenDao, false)
                 } else {
                     updateToken(accessTokenDao, true)
@@ -92,117 +85,45 @@ class GameViewModel(application: Application, private val gameMode: String): And
         }
     }
 
-    fun addUser() {
-        if (_currentUser.value != null) {
-            firebase.collection("users").add(_currentUser.value!!)
-                .addOnSuccessListener {
-                    Log.i("addedUser", _currentUser.value.toString())
+    private fun getUsersProfiles() {
+        coroutineScope.launch {
+            if (_room.value != null) {
+                _room.value!!.users.map {idSpotify ->
+                    val getUserDeferred = firebase.getUser(idSpotify)
+                    try {
+                        val getUserResult = getUserDeferred.await()
+                        if (getUserResult == null) {
+                            _error.value = getUserDeferred.getCompletionExceptionOrNull()?.message
+                        } else {
+                            val currentList = _users.value?.toMutableList() ?: mutableListOf()
+                            currentList.add(getUserResult)
+                            _users.value = currentList
+                        }
+                    } catch (exception: Exception) {
+                        _error.value = exception.message
+                    }
+
                 }
-                .addOnFailureListener {exception ->
-                    Log.e("HomeViewModel",
-                        "Failed to add user: ${_currentUser.value!!.name}: ${exception.message}"
-                    )
+            }
+        }
+    }
+
+    fun leaveRoom() {
+        coroutineScope.launch {
+            if (_currentUser.value != null && _room.value != null) {
+                val leaveRoomDeferred = firebase.removeUserFromRoom(_room.value!!.code, _currentUser.value!!.id_spotify)
+                try {
+                    val leaveRoomResult = leaveRoomDeferred.await()
+                    if (leaveRoomResult == null) {
+                        _error.value = leaveRoomDeferred.getCompletionExceptionOrNull()?.message
+                    } else {
+                        _room.value = leaveRoomResult
+                        Log.e("new room", leaveRoomResult.toString())
+                    }
+                } catch (exception: Exception) {
                     _error.value = exception.message
                 }
-        }
-    }
-
-    fun deleteUser() {
-        if (_currentUser.value != null) {
-            firebase.collection("users").whereEqualTo("id_spotify", _currentUser.value!!.id_spotify).get()
-                .addOnSuccessListener { querySnapshot ->
-                    for (document in querySnapshot.documents) {
-                        document.reference.delete()
-                            .addOnSuccessListener {
-                                Log.i("HomeViewModel",
-                                    "User: ${_currentUser.value?.name} deleted successfully"
-                                )
-                            }
-                            .addOnFailureListener { exception ->
-                                _error.value = exception.message
-                                Log.i("HomeViewModel",
-                                    "Failed to delete user ${_currentUser.value?.name}: ${exception.message}"
-                                )
-                            }
-                    }
-                }
-        }
-    }
-
-    private fun createRoom() {
-        firebase.collection("rooms").get()
-            .addOnSuccessListener {querySnapshot ->
-                for (document in querySnapshot.documents) {
-                    val code = document.getString("code")
-                    if (code != null) {
-                        usedRoomCodes.add(code)
-                    }
-                }
-
-                val roomAux = Room(
-                    generateRoomCode(usedRoomCodes),
-                    gameMode,
-                    mutableListOf(_currentUser.value?.id_spotify).filterNotNull()
-                )
-                _room.value = roomAux
             }
-            .addOnFailureListener {exception ->
-                _error.value = exception.message
-            }
-    }
-
-    private fun generateRoomCode(existingCodes: Set<String>): String {
-        val random = Random
-        val stringBuilder = StringBuilder()
-        var randomString: String
-        do {
-            stringBuilder.clear()
-
-            repeat(4) {
-                val digit = random.nextInt(10)
-                stringBuilder.append(digit)
-            }
-
-            randomString = stringBuilder.toString()
-        } while (existingCodes.contains(randomString))
-
-        return randomString
-    }
-
-    fun addRoom() {
-        if (_room.value != null) {
-            firebase.collection("rooms").add(_room.value!!)
-                .addOnSuccessListener {
-                    Log.i("addedRoom", _room.value.toString())
-                }
-                .addOnFailureListener {exception ->
-                    Log.e("HomeViewModel",
-                        "Failed to add room: ${_room.value!!.code}: ${exception.message}"
-                    )
-                    _error.value = exception.message
-                }
-        }
-    }
-
-    fun deleteRoom() {
-        if (_room.value != null) {
-            firebase.collection("rooms").whereEqualTo("code", _room.value!!.code).get()
-                .addOnSuccessListener { querySnapshot ->
-                    for (document in querySnapshot.documents) {
-                        document.reference.delete()
-                            .addOnSuccessListener {
-                                Log.i("HomeViewModel",
-                                    "Room: ${_room.value?.code} deleted successfully"
-                                )
-                            }
-                            .addOnFailureListener { exception ->
-                                _error.value = exception.message
-                                Log.i("HomeViewModel",
-                                    "Failed to delete room ${_room.value?.code}: ${exception.message}"
-                                )
-                            }
-                    }
-                }
         }
     }
 }

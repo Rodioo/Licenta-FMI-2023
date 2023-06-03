@@ -83,7 +83,6 @@ class MainActivity : AppCompatActivity() {
         viewModel.accessToken.observe(this) { accessToken ->
             val currentTime = System.currentTimeMillis()
             if (accessToken != null && accessToken.expiresAt > currentTime + ACCESS_TOKEN_REFRESH_MARGIN && !accessToken.needsRefresh) {
-                Log.e("ceva1", "1")
                 navController.navigate(R.id.profileFragment)
             } else {
                 try {
@@ -100,7 +99,6 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
 
         viewModel.accessToken.value?.value?.let {
-            Log.e("ceva", it)
             viewModel.saveAccessToken(it)
         }
     }

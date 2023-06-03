@@ -5,4 +5,6 @@ data class User(
     val token: String,
     val name: String,
     val image_url: String
-)
+) {
+    constructor() : this("", "", "", "")
+}

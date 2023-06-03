@@ -32,17 +32,17 @@ class GameFragment : Fragment() {
     private lateinit var viewModelFactory: GameViewModelFactory
     private lateinit var usersAdapter: UserAdapter
 
-    private lateinit var gameMode: String
+    private lateinit var room: Room
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentGameBinding.inflate(inflater)
 
-        gameMode = GameFragmentArgs.fromBundle(requireArguments()).gameMode
+        room = GameFragmentArgs.fromBundle(requireArguments()).room
 
-        viewModelFactory = GameViewModelFactory(this.requireActivity().application, gameMode)
+        viewModelFactory = GameViewModelFactory(this.requireActivity().application, room)
         viewModel = ViewModelProvider(this, viewModelFactory)[GameViewModel::class.java]
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
@@ -61,25 +61,18 @@ class GameFragment : Fragment() {
                 users -> usersAdapter.submitList(users)
         }
 
-        viewModel.currentUser.observe(viewLifecycleOwner) {
-            viewModel.addUser()
-        }
-
-        viewModel.room.observe(viewLifecycleOwner) {
-            viewModel.addRoom()
-        }
-
         val backButtonCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
+                viewModel.currentUser.observe(viewLifecycleOwner) {
+                    viewModel.leaveRoom()
+                }
                 view?.findNavController()?.navigate(
                     GameFragmentDirections.actionGameFragmentToHomeFragment()
                 )
             }
         }
 
-
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, backButtonCallback)
-
 
         return binding.root
     }

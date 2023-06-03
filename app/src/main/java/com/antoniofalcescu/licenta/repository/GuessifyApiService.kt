@@ -14,6 +14,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 private const val BASE_URL = "https://api.spotify.com/v1/"
@@ -30,6 +31,12 @@ private val retrofit = Retrofit.Builder()
 interface GuessifyApiService {
     @GET(value= "me")
     suspend fun getCurrentUserProfile(@Header("Authorization") accessToken: String): Response<Profile>
+
+    @GET(value= "users/{id}")
+    suspend fun getUserProfile(
+        @Header("Authorization") accessToken: String,
+        @Path("id") idSpotify: String
+    ): Response<Profile>
 
     @GET(value= "me/top/tracks")
     suspend fun getCurrentUserTopTracks(
