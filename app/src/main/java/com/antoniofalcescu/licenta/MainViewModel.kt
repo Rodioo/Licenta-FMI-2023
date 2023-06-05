@@ -1,21 +1,19 @@
 package com.antoniofalcescu.licenta
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.antoniofalcescu.licenta.login.LoginFragment
-import com.antoniofalcescu.licenta.profile.Profile
-import com.antoniofalcescu.licenta.repository.GuessifyApi
-import com.antoniofalcescu.licenta.repository.accessToken.AccessToken
-import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDao
-import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDatabase
+import com.antoniofalcescu.licenta.repository.Firebase
+import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.AccessToken
+import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.AccessTokenDao
+import com.antoniofalcescu.licenta.repository.roomDatabase.LocalDatabase
 import kotlinx.coroutines.*
 
 private const val TOKEN_REFRESH_TIMER_REQUEST = 5000L
 
 class MainViewModel(application: Application): AndroidViewModel(application) {
+    private var firebase: Firebase
 
     private var viewModelJob: Job = Job()
     private var coroutineScope: CoroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
@@ -27,7 +25,8 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         get() = _accessToken
 
     init {
-        accessTokenDao = AccessTokenDatabase.getInstance(application).accessTokenDao
+        firebase = Firebase(application)
+        accessTokenDao = LocalDatabase.getInstance(application).accessTokenDao
         coroutineScope.launch {
             var token = getAccessToken()
             _accessToken.postValue(token)
@@ -64,5 +63,9 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
                 _accessToken.value = accessToken
             }
         }
+    }
+
+    fun deleteEmptyRooms() {
+        firebase.deleteEmptyRooms()
     }
 }

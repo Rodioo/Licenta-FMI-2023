@@ -1,4 +1,4 @@
-package com.antoniofalcescu.licenta.repository.accessToken
+package com.antoniofalcescu.licenta.repository.roomDatabase.accessToken
 
 import kotlinx.coroutines.*
 

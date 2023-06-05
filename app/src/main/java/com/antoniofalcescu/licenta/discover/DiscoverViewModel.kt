@@ -8,9 +8,9 @@ import androidx.lifecycle.MutableLiveData
 import com.antoniofalcescu.licenta.profile.artists.Artist
 import com.antoniofalcescu.licenta.profile.tracks.Track
 import com.antoniofalcescu.licenta.repository.GuessifyApi
-import com.antoniofalcescu.licenta.repository.accessToken.AccessToken
-import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDao
-import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDatabase
+import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.AccessToken
+import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.AccessTokenDao
+import com.antoniofalcescu.licenta.repository.roomDatabase.LocalDatabase
 import kotlinx.coroutines.*
 
 class DiscoverViewModel(application: Application): AndroidViewModel(application) {
@@ -38,7 +38,7 @@ class DiscoverViewModel(application: Application): AndroidViewModel(application)
         get() = _discoverTrack
 
     init {
-        accessTokenDao = AccessTokenDatabase.getInstance(application).accessTokenDao
+        accessTokenDao = LocalDatabase.getInstance(application).accessTokenDao
 
         coroutineScope.launch {
             if (!(::accessToken.isInitialized) || accessToken.value == null) {

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:saveEnabled="true">
     <data>
         <variable
             name="viewModel"
@@ -94,7 +95,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{viewModel.room.code}"
+                android:text="@{viewModel.gameRoom.code}"
                 android:layout_gravity="center_horizontal"
                 android:textSize="@dimen/title_text"
                 android:textStyle="bold"
@@ -118,7 +119,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:text="@{viewModel.room.gamemode}"
+                    android:text="@{viewModel.gameRoom.gamemode}"
                     android:textSize="@dimen/medium_text"
                     android:textAllCaps="true"
                     android:textStyle="bold"

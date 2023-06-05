@@ -6,22 +6,25 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.antoniofalcescu.licenta.home.User
-import com.antoniofalcescu.licenta.repository.Firebase
-import com.antoniofalcescu.licenta.repository.GuessifyApi
-import com.antoniofalcescu.licenta.repository.accessToken.*
+import com.antoniofalcescu.licenta.repository.*
+import com.antoniofalcescu.licenta.repository.roomDatabase.LocalDatabase
+import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.*
+import com.antoniofalcescu.licenta.repository.roomDatabase.gameRoom.GameRoomCodeDao
+import com.antoniofalcescu.licenta.repository.roomDatabase.gameRoom.getLastRoomCode
+import com.antoniofalcescu.licenta.repository.roomDatabase.gameRoom.insertLastRoom
 import com.antoniofalcescu.licenta.utils.EMPTY_PROFILE_IMAGE_URL
-import com.google.firebase.FirebaseApp
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.*
-import kotlin.random.Random
 
-class GameViewModel(application: Application, roomAux: Room): AndroidViewModel(application) {
+class GameViewModel(application: Application, gameRoomAux: GameRoom): AndroidViewModel(application) {
 
     private var firebase: Firebase
 
     private var viewModelJob: Job = Job()
     private var coroutineScope: CoroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
+    private val _gameRoomDao = MutableLiveData<GameRoomCodeDao?>()
+    val gameRoomDao: LiveData<GameRoomCodeDao?>
+        get() = _gameRoomDao
     private val accessTokenDao: AccessTokenDao
     private var accessToken: AccessToken? = null
 
@@ -41,14 +44,15 @@ class GameViewModel(application: Application, roomAux: Room): AndroidViewModel(a
     val users: LiveData<List<User?>>
         get() = _users
 
-    private val _room = MutableLiveData(roomAux)
-    val room: LiveData<Room>
-        get() = _room
+    private val _gameRoom = MutableLiveData(gameRoomAux)
+    val gameRoom: LiveData<GameRoom>
+        get() = _gameRoom
 
     init {
         firebase = Firebase(application)
 
-        accessTokenDao = AccessTokenDatabase.getInstance(application).accessTokenDao
+        _gameRoomDao.value = LocalDatabase.getInstance(application).gameRoomDao
+        accessTokenDao = LocalDatabase.getInstance(application).accessTokenDao
 
         coroutineScope.launch {
             if (accessToken?.value == null) {
@@ -62,7 +66,7 @@ class GameViewModel(application: Application, roomAux: Room): AndroidViewModel(a
         }
     }
 
-    private fun getCurrentUser() {
+    fun getCurrentUser() {
         coroutineScope.launch {
             val response = GuessifyApi.retrofitService.getCurrentUserProfile("Bearer ${accessToken!!.value}")
             withContext(Dispatchers.Main) {
@@ -104,7 +108,6 @@ class GameViewModel(application: Application, roomAux: Room): AndroidViewModel(a
                             _error.value = getUserDeferred.getCompletionExceptionOrNull()?.message
                         } else {
                             usersAux.add(getUserResult)
-                            _users.value = usersAux
                         }
                     } catch (exception: Exception) {
                         _error.value = exception.message
@@ -112,13 +115,14 @@ class GameViewModel(application: Application, roomAux: Room): AndroidViewModel(a
 
                 }
             }
+            _users.value = usersAux
         }
     }
 
     private fun getUsersFromRoom() {
         coroutineScope.launch {
-            if (_room.value != null) {
-                val getUsersFromRoomDeferred = firebase.getUsersFromRoom(_room.value!!.code)
+            if (_gameRoom.value != null) {
+                val getUsersFromRoomDeferred = firebase.getUsersFromRoom(_gameRoom.value!!.code)
                 try {
                     val getUserFromRoomResult = getUsersFromRoomDeferred.await()
                     if (getUserFromRoomResult.isEmpty()) {
@@ -133,17 +137,46 @@ class GameViewModel(application: Application, roomAux: Room): AndroidViewModel(a
         }
     }
 
+    fun rejoinRoom() {
+        coroutineScope.launch {
+            var lastRoomCode: String? = null
+            if (_gameRoomDao.value != null) {
+                val lastRoom = getLastRoomCode(_gameRoomDao.value!!)
+                lastRoomCode = lastRoom?.code
+                Log.e("newRoom", lastRoomCode.toString())
+            } else {
+                Log.e("newRoom", "Game room DAO value is null")
+            }
+            if (_currentUser.value != null && lastRoomCode != null) {
+                val joinRoomDeferred = firebase.addUserToRoom(lastRoomCode, _currentUser.value!!.id_spotify)
+                try {
+                    val joinRoomResult = joinRoomDeferred.await()
+                    if (joinRoomResult == null) {
+                        _error.value = joinRoomDeferred.getCompletionExceptionOrNull()?.message
+                    } else {
+                        _gameRoom.value = joinRoomResult
+                    }
+                } catch (exception: Exception) {
+                    _error.value = exception.message
+                }
+            }
+        }
+    }
+
     fun leaveRoom() {
         coroutineScope.launch {
-            if (_currentUser.value != null && _room.value != null) {
-                val leaveRoomDeferred = firebase.removeUserFromRoom(_room.value!!.code, _currentUser.value!!.id_spotify)
+            if (_currentUser.value != null && _gameRoom.value != null) {
+                val leaveRoomDeferred = firebase.removeUserFromRoom(_gameRoom.value!!.code, _currentUser.value!!.id_spotify)
                 try {
                     val leaveRoomResult = leaveRoomDeferred.await()
                     if (leaveRoomResult == null) {
                         _error.value = leaveRoomDeferred.getCompletionExceptionOrNull()?.message
                     } else {
-                        _room.value = leaveRoomResult
-                        _userIds.value = _room.value!!.users
+                        if (_gameRoomDao.value != null && _gameRoom.value != null) {
+                            insertLastRoom(_gameRoomDao.value!!, _gameRoom.value!!.code)
+                        }
+                        _gameRoom.value = leaveRoomResult
+                        _userIds.value = _gameRoom.value!!.users
                     }
                 } catch (exception: Exception) {
                     _error.value = exception.message

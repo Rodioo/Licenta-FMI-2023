@@ -88,6 +88,6 @@ fun bindGenresRecyclerView(recyclerView: RecyclerView, data: List<GenreItem>?) {
 
 @BindingAdapter("usersList")
 fun bindUsersRecyclerView(recyclerView: RecyclerView, data: List<User?>?) {
-    val adapter = recyclerView.adapter as UserAdapter
-    adapter.submitList(data)
+    val adapter = recyclerView.adapter as? UserAdapter
+    adapter?.submitList(data)
 }

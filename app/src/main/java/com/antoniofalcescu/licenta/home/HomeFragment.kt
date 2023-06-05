@@ -12,12 +12,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import com.antoniofalcescu.licenta.R
 import com.antoniofalcescu.licenta.databinding.FragmentHomeBinding
-import com.antoniofalcescu.licenta.profile.tracks.TracksAdapter
 import com.antoniofalcescu.licenta.utils.Orientation
 import com.antoniofalcescu.licenta.utils.RecyclerViewSpacing
 import com.antoniofalcescu.licenta.utils.Spacing
 import com.antoniofalcescu.licenta.utils.getSpacing
-import com.google.firebase.firestore.FirebaseFirestore
 
 class HomeFragment : Fragment() {
 
@@ -83,9 +81,9 @@ class HomeFragment : Fragment() {
             }
         }
 
-        viewModel.room.observe(viewLifecycleOwner) {room->
+        viewModel.gameRoom.observe(viewLifecycleOwner) {gameRoom ->
             view?.findNavController()?.navigate(
-                HomeFragmentDirections.actionHomeFragmentToGameFragment(room!!)
+                HomeFragmentDirections.actionHomeFragmentToGameFragment(gameRoom!!)
             )
         }
 

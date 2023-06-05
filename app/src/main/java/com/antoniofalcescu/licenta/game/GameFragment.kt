@@ -9,22 +9,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.navigation.findNavController
-import com.antoniofalcescu.licenta.R
 import com.antoniofalcescu.licenta.databinding.FragmentGameBinding
-import com.antoniofalcescu.licenta.databinding.FragmentProfileBinding
-import com.antoniofalcescu.licenta.profile.ProfileViewModel
-import com.antoniofalcescu.licenta.profile.ProfileViewModelFactory
-import com.antoniofalcescu.licenta.profile.tracks.TracksAdapter
 import com.antoniofalcescu.licenta.utils.Orientation
 import com.antoniofalcescu.licenta.utils.RecyclerViewSpacing
 import com.antoniofalcescu.licenta.utils.Spacing
 import com.antoniofalcescu.licenta.utils.getSpacing
 
 //TODO: posibil sa adaug field isOwner in firestore cand creezi tu joc ca sa poti da kick la altii ingame
-//TODO: de adaugat flow-ul pentru creare joc din artists/tracks
-//TODO: de adaugat flow pt join la joc
-//TODO: de adaugat business logic si adaugat camera in bd
-//TODO: add delete room after 15 mins or some timer
+//TODO: verificat cand si dc da 401 cateodata random (posibil sa nu reinitalizeze bine token-ul)
+//TODO: in onStop scot uSerul din camera si salvez in ce camera a fost pt ca in onStart sa il bag inapoi daca gaseste salvat in savedInstanceState
+//TODO: cand un user da join/create la o camera il scot din toate celelalte camere din firebase in care era
 class GameFragment : Fragment() {
 
     private lateinit var binding: FragmentGameBinding
@@ -32,17 +26,16 @@ class GameFragment : Fragment() {
     private lateinit var viewModelFactory: GameViewModelFactory
     private lateinit var usersAdapter: UserAdapter
 
-    private lateinit var room: Room
-
+    private lateinit var gameRoom: GameRoom
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentGameBinding.inflate(inflater)
 
-        room = GameFragmentArgs.fromBundle(requireArguments()).room
+        gameRoom = GameFragmentArgs.fromBundle(requireArguments()).gameRoom
 
-        viewModelFactory = GameViewModelFactory(this.requireActivity().application, room)
+        viewModelFactory = GameViewModelFactory(this.requireActivity().application, gameRoom)
         viewModel = ViewModelProvider(this, viewModelFactory)[GameViewModel::class.java]
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
@@ -57,8 +50,8 @@ class GameFragment : Fragment() {
         binding.usersRecycler.addItemDecoration(
             RecyclerViewSpacing(requireContext().getSpacing(Spacing.MEDIUM), Orientation.VERTICAL, true)
         )
-        viewModel.users.observe(viewLifecycleOwner) {
-                users -> usersAdapter.submitList(users)
+        viewModel.users.observe(viewLifecycleOwner) {users ->
+            usersAdapter.submitList(users)
         }
 
         viewModel.userIds.observe(viewLifecycleOwner) {
@@ -79,5 +72,17 @@ class GameFragment : Fragment() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, backButtonCallback)
 
         return binding.root
+    }
+
+    override fun onStart() {
+        super.onStart()
+        viewModel.gameRoomDao.observe(viewLifecycleOwner) {
+            viewModel.rejoinRoom()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        viewModel.leaveRoom()
     }
 }

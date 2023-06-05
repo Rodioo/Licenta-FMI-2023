@@ -15,7 +15,9 @@ class UserAdapter(
 
     private var userList: List<User?>? = listOf()
 
-    class ViewHolder(private var binding: UserItemViewBinding): RecyclerView.ViewHolder(binding.root) {
+    class ViewHolder(
+        private var binding: UserItemViewBinding
+        ): RecyclerView.ViewHolder(binding.root) {
         val userView = binding.userView
 
         fun bind(user: User) {

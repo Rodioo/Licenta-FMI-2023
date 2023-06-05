@@ -1,13 +1,13 @@
-package com.antoniofalcescu.licenta.repository.accessToken
+package com.antoniofalcescu.licenta.repository.roomDatabase.accessToken
 
 import android.os.Parcelable
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
 
 private const val HOUR_IN_MILLISECONDS = 60 * 60 * 1000
-
+const val ACCESS_TOKEN_REFRESH_MARGIN: Long = 15 * 60 * 1000
+const val ACCESS_TOKEN_REFRESH_INTERVAL: Long = 60 * 1000
 @Parcelize
 @Entity(tableName = "access_token")
 data class AccessToken(

@@ -47,7 +47,7 @@
             android:id="@+id/action_gameFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
         <argument
-            android:name="room"
-            app:argType="com.antoniofalcescu.licenta.game.Room" />
+            android:name="gameRoom"
+            app:argType="com.antoniofalcescu.licenta.game.GameRoom" />
     </fragment>
 </navigation>

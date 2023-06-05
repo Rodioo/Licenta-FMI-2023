@@ -2,11 +2,13 @@ package com.antoniofalcescu.licenta.repository
 
 import android.app.Application
 import android.util.Log
-import com.antoniofalcescu.licenta.game.Room
+import com.antoniofalcescu.licenta.game.GameRoom
 import com.antoniofalcescu.licenta.home.User
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CompletableDeferred
+
+const val FIREBASE_DELETE_EMPTY_ROOMS_INTERVAL: Long = 5 * 60 * 1000
 
 class Firebase(application: Application) {
 
@@ -58,20 +60,20 @@ class Firebase(application: Application) {
         return deferred
     }
 
-    fun addRoom(room: Room): CompletableDeferred<Boolean> {
+    fun addRoom(gameRoom: GameRoom): CompletableDeferred<Boolean> {
         val deferred = CompletableDeferred<Boolean>()
 
         firebaseInstance.collection("rooms")
-            .document(room.code)
-            .set(room)
+            .document(gameRoom.code)
+            .set(gameRoom)
             .addOnSuccessListener {
-                Log.i("addedRoom", room.toString())
+                Log.i("addedRoom", gameRoom.toString())
                 deferred.complete(true)
             }
             .addOnFailureListener { exception ->
                 Log.e(
                     "HomeViewModel",
-                    "Failed to add room: ${room.code}: ${exception.message}"
+                    "Failed to add room: ${gameRoom.code}: ${exception.message}"
                 )
                 deferred.completeExceptionally(exception)
             }
@@ -79,8 +81,36 @@ class Firebase(application: Application) {
         return deferred
     }
 
-    fun addUserToRoom(roomCode: String, userId: String): CompletableDeferred<Room?> {
-        val deferred = CompletableDeferred<Room?>()
+    fun deleteEmptyRooms() {
+        firebaseInstance.collection("rooms").get()
+            .addOnSuccessListener { querySnapshot ->
+                val batch = firebaseInstance.batch()
+
+                for (document in querySnapshot.documents) {
+                    val gameRoom = document.toObject(GameRoom::class.java)
+                    if (gameRoom?.users.isNullOrEmpty()) {
+                        batch.delete(document.reference)
+                    }
+                }
+
+                batch.commit()
+                    .addOnSuccessListener {
+                        // Deletion successful
+                        Log.i("deleteRooms", "Rooms deleted successfully.")
+                    }
+                    .addOnFailureListener { exception ->
+                        // Error occurred during deletion
+                        Log.e("deleteRooms", "Failed to delete rooms: ${exception.message}")
+                    }
+            }
+            .addOnFailureListener { exception ->
+                // Error occurred while fetching the documents
+                Log.e("deleteRooms", "Failed to fetch rooms: ${exception.message}")
+            }
+    }
+
+    fun addUserToRoom(roomCode: String, userId: String): CompletableDeferred<GameRoom?> {
+        val deferred = CompletableDeferred<GameRoom?>()
 
         val roomRef = firebaseInstance.collection("rooms").document(roomCode)
 
@@ -88,7 +118,7 @@ class Firebase(application: Application) {
             val roomSnapshot = transaction.get(roomRef)
 
             if (roomSnapshot.exists()) {
-                val userList = roomSnapshot.toObject(Room::class.java)?.users?.toMutableList()
+                val userList = roomSnapshot.toObject(GameRoom::class.java)?.users?.toMutableList()
                 if (userList != null && !userList.contains(userId)) {
                     userList.add(userId)
                 }
@@ -101,8 +131,8 @@ class Firebase(application: Application) {
             .addOnSuccessListener {
                 roomRef.get()
                     .addOnSuccessListener { roomSnapshot ->
-                        val updatedRoom = roomSnapshot.toObject(Room::class.java)
-                        deferred.complete(updatedRoom)
+                        val updatedGameRoom = roomSnapshot.toObject(GameRoom::class.java)
+                        deferred.complete(updatedGameRoom)
                     }
                     .addOnFailureListener { exception ->
                         Log.e("updateRoomWithUser", "Failed to get updated room: $roomCode: ${exception.message}")
@@ -117,8 +147,8 @@ class Firebase(application: Application) {
         return deferred
     }
 
-    fun removeUserFromRoom(roomCode: String, userId: String): CompletableDeferred<Room?> {
-        val deferred = CompletableDeferred<Room?>()
+    fun removeUserFromRoom(roomCode: String, userId: String): CompletableDeferred<GameRoom?> {
+        val deferred = CompletableDeferred<GameRoom?>()
 
         val roomRef = firebaseInstance.collection("rooms").document(roomCode)
 
@@ -126,7 +156,7 @@ class Firebase(application: Application) {
             val roomSnapshot = transaction.get(roomRef)
 
             if (roomSnapshot.exists()) {
-                val userList = roomSnapshot.toObject(Room::class.java)?.users?.toMutableList()
+                val userList = roomSnapshot.toObject(GameRoom::class.java)?.users?.toMutableList()
                 userList?.remove(userId)
 
                 transaction.update(roomRef, "users", userList)
@@ -138,8 +168,8 @@ class Firebase(application: Application) {
             .addOnSuccessListener {
                 roomRef.get()
                     .addOnSuccessListener { roomSnapshot ->
-                        val updatedRoom = roomSnapshot.toObject(Room::class.java)
-                        deferred.complete(updatedRoom)
+                        val updatedGameRoom = roomSnapshot.toObject(GameRoom::class.java)
+                        deferred.complete(updatedGameRoom)
                     }
                     .addOnFailureListener { exception ->
                         Log.e("updateRoomWithUser", "Failed to get updated room: $roomCode: ${exception.message}")
@@ -152,6 +182,10 @@ class Firebase(application: Application) {
             }
 
         return deferred
+    }
+
+    fun removeUserFromAllRooms(userId: String) {
+
     }
 
     fun getUsedRoomCodes(): CompletableDeferred<Set<String>> {
@@ -181,8 +215,8 @@ class Firebase(application: Application) {
             .get()
             .addOnSuccessListener { documentSnapshot ->
                 if (documentSnapshot.exists()) {
-                    val room = documentSnapshot.toObject(Room::class.java)
-                    val users = room?.users ?: emptyList()
+                    val gameRoom = documentSnapshot.toObject(GameRoom::class.java)
+                    val users = gameRoom?.users ?: emptyList()
                     deferred.complete(users)
                 } else {
                     deferred.complete(emptyList())

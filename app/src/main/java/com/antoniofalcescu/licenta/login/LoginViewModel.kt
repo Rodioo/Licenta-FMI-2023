@@ -1,12 +1,10 @@
 package com.antoniofalcescu.licenta.login
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import com.antoniofalcescu.licenta.repository.accessToken.AccessToken
-import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDao
-import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDatabase
+import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.AccessToken
+import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.AccessTokenDao
+import com.antoniofalcescu.licenta.repository.roomDatabase.LocalDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -20,7 +18,7 @@ class LoginViewModel(application: Application): AndroidViewModel(application) {
     private val accessTokenDao: AccessTokenDao
 
     init {
-        accessTokenDao = AccessTokenDatabase.getInstance(application).accessTokenDao
+        accessTokenDao = LocalDatabase.getInstance(application).accessTokenDao
     }
 
     fun saveAccessToken(token: String) {

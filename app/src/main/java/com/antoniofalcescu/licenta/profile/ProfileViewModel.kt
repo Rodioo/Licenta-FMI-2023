@@ -5,18 +5,15 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.antoniofalcescu.licenta.home.User
 import com.antoniofalcescu.licenta.profile.artists.Artist
 import com.antoniofalcescu.licenta.profile.currentlyPlayingTrack.CurrentlyPlayingTrack
 import com.antoniofalcescu.licenta.profile.recentlyPlayedTracks.RecentlyPlayedTrack
 import com.antoniofalcescu.licenta.profile.tracks.Track
-import com.antoniofalcescu.licenta.repository.Firebase
-import com.antoniofalcescu.licenta.repository.GuessifyApi
-import com.antoniofalcescu.licenta.repository.accessToken.*
+import com.antoniofalcescu.licenta.repository.*
+import com.antoniofalcescu.licenta.repository.roomDatabase.LocalDatabase
+import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.*
 import com.antoniofalcescu.licenta.utils.EMPTY_PROFILE_IMAGE_URL
 import com.antoniofalcescu.licenta.utils.SpotifyImage
-import com.google.firebase.FirebaseApp
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.*
 import java.net.SocketTimeoutException
 
@@ -56,7 +53,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
 
     init {
 
-        accessTokenDao = AccessTokenDatabase.getInstance(application).accessTokenDao
+        accessTokenDao = LocalDatabase.getInstance(application).accessTokenDao
 
         coroutineScope.launch {
             if (accessToken?.value == null) {

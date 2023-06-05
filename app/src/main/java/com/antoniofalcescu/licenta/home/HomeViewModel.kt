@@ -5,10 +5,10 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.antoniofalcescu.licenta.game.Room
-import com.antoniofalcescu.licenta.repository.Firebase
-import com.antoniofalcescu.licenta.repository.GuessifyApi
-import com.antoniofalcescu.licenta.repository.accessToken.*
+import com.antoniofalcescu.licenta.game.GameRoom
+import com.antoniofalcescu.licenta.repository.*
+import com.antoniofalcescu.licenta.repository.roomDatabase.LocalDatabase
+import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.*
 import com.antoniofalcescu.licenta.utils.EMPTY_PROFILE_IMAGE_URL
 import kotlinx.coroutines.*
 import kotlin.random.Random
@@ -35,15 +35,15 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
     val genres: LiveData<Genre>
         get() = _genres
 
-    private val _room = MutableLiveData<Room?>()
-    val room: LiveData<Room?>
-        get() = _room
+    private val _gameRoom = MutableLiveData<GameRoom?>()
+    val gameRoom: LiveData<GameRoom?>
+        get() = _gameRoom
 
 
     init {
         firebase = Firebase(application)
 
-        accessTokenDao = AccessTokenDatabase.getInstance(application).accessTokenDao
+        accessTokenDao = LocalDatabase.getInstance(application).accessTokenDao
 
         coroutineScope.launch {
             if (accessToken?.value == null) {
@@ -153,19 +153,19 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
                     if (getUsedCodesResult.isEmpty()) {
                         _error.value = getUsedCodesDeferred.getCompletionExceptionOrNull()?.message
                     } else {
-                        val room = Room(
+                        val gameRoom = GameRoom(
                             generateRoomCode(getUsedCodesResult),
                             gameMode,
                             mutableListOf(_user.value?.id_spotify).filterNotNull()
                         )
 
-                        val addRoomDeferred = firebase.addRoom(room)
+                        val addRoomDeferred = firebase.addRoom(gameRoom)
                         try {
                             val addRoomResult = addRoomDeferred.await()
                             if (!addRoomResult) {
                                 _error.value = addRoomDeferred.getCompletionExceptionOrNull()?.message
                             } else {
-                                _room.value = room
+                                _gameRoom.value = gameRoom
                             }
                         } catch (exception: Exception) {
                             _error.value = exception.message
@@ -175,7 +175,6 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
                     _error.value = exception.message
                 }
             }
-            Log.e("room", _room.value.toString())
         }
     }
 
@@ -188,7 +187,7 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
                     if (joinRoomResult == null) {
                         _error.value = joinRoomDeferred.getCompletionExceptionOrNull()?.message
                     } else {
-                        _room.value = joinRoomResult
+                        _gameRoom.value = joinRoomResult
                     }
                 } catch (exception: Exception) {
                     _error.value = exception.message
