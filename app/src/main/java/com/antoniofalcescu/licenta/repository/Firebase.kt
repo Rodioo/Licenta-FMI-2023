@@ -184,8 +184,37 @@ class Firebase(application: Application) {
         return deferred
     }
 
-    fun removeUserFromAllRooms(userId: String) {
+    fun deleteUserFromAllRooms(userId: String): CompletableDeferred<Boolean> {
+        val deferred = CompletableDeferred<Boolean>()
 
+        firebaseInstance.collection("rooms")
+            .whereArrayContains("users", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val batch = firebaseInstance.batch()
+
+                for (document in querySnapshot.documents) {
+                    val userList = document.toObject(GameRoom::class.java)?.users?.toMutableList()
+                    userList?.remove(userId)
+
+                    batch.update(document.reference, "users", userList)
+                }
+
+                batch.commit()
+                    .addOnSuccessListener {
+                        deferred.complete(true)
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.e("deleteUserFromAllRooms", "Failed to update rooms: ${exception.message}")
+                        deferred.completeExceptionally(exception)
+                    }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("deleteUserFromAllRooms", "Failed to query rooms: ${exception.message}")
+                deferred.completeExceptionally(exception)
+            }
+
+        return deferred
     }
 
     fun getUsedRoomCodes(): CompletableDeferred<Set<String>> {

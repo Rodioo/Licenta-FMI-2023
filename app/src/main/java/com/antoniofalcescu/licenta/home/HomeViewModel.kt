@@ -11,6 +11,8 @@ import com.antoniofalcescu.licenta.repository.roomDatabase.LocalDatabase
 import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.*
 import com.antoniofalcescu.licenta.utils.EMPTY_PROFILE_IMAGE_URL
 import kotlinx.coroutines.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.random.Random
 
 class HomeViewModel(application: Application): AndroidViewModel(application) {
@@ -100,6 +102,28 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
+    private suspend fun deleteUserFromAllRooms(): Boolean = suspendCoroutine {continuation ->
+        coroutineScope.launch {
+            if (_user.value != null) {
+                val deleteUserDeferred = firebase.deleteUserFromAllRooms(_user.value!!.id_spotify)
+                try {
+                    val deleteUserResult = deleteUserDeferred.await()
+                    if (!deleteUserResult) {
+                        continuation.resumeWith(Result.failure(Exception(
+                            deleteUserDeferred.getCompletionExceptionOrNull()?.message)
+                        ))
+                    } else {
+                        continuation.resume(true)
+                    }
+                } catch (exception: Exception) {
+                    continuation.resumeWith(Result.failure(exception))
+                }
+            } else {
+                continuation.resumeWith(Result.failure(Exception("User is null!")))
+            }
+        }
+    }
+
     fun getGameGenres() {
         coroutineScope.launch {
             val response = GuessifyApi.retrofitService.getGenres(
@@ -147,29 +171,34 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
     fun createRoom(gameMode: String) {
         coroutineScope.launch {
             if (_user.value != null) {
-                val getUsedCodesDeferred = firebase.getUsedRoomCodes()
                 try {
-                    val getUsedCodesResult = getUsedCodesDeferred.await()
-                    if (getUsedCodesResult.isEmpty()) {
-                        _error.value = getUsedCodesDeferred.getCompletionExceptionOrNull()?.message
-                    } else {
-                        val gameRoom = GameRoom(
-                            generateRoomCode(getUsedCodesResult),
-                            gameMode,
-                            mutableListOf(_user.value?.id_spotify).filterNotNull()
-                        )
+                    deleteUserFromAllRooms()
+                    val getUsedCodesDeferred = firebase.getUsedRoomCodes()
+                    try {
+                        val getUsedCodesResult = getUsedCodesDeferred.await()
+                        if (getUsedCodesResult.isEmpty()) {
+                            _error.value = getUsedCodesDeferred.getCompletionExceptionOrNull()?.message
+                        } else {
+                            val gameRoom = GameRoom(
+                                generateRoomCode(getUsedCodesResult),
+                                gameMode,
+                                mutableListOf(_user.value?.id_spotify).filterNotNull()
+                            )
 
-                        val addRoomDeferred = firebase.addRoom(gameRoom)
-                        try {
-                            val addRoomResult = addRoomDeferred.await()
-                            if (!addRoomResult) {
-                                _error.value = addRoomDeferred.getCompletionExceptionOrNull()?.message
-                            } else {
-                                _gameRoom.value = gameRoom
+                            val addRoomDeferred = firebase.addRoom(gameRoom)
+                            try {
+                                val addRoomResult = addRoomDeferred.await()
+                                if (!addRoomResult) {
+                                    _error.value = addRoomDeferred.getCompletionExceptionOrNull()?.message
+                                } else {
+                                    _gameRoom.value = gameRoom
+                                }
+                            } catch (exception: Exception) {
+                                _error.value = exception.message
                             }
-                        } catch (exception: Exception) {
-                            _error.value = exception.message
                         }
+                    } catch (exception: Exception) {
+                        _error.value = exception.message
                     }
                 } catch (exception: Exception) {
                     _error.value = exception.message
@@ -181,13 +210,18 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
     fun joinRoom(roomCode: String) {
         coroutineScope.launch {
             if (_user.value != null) {
-                val joinRoomDeferred = firebase.addUserToRoom(roomCode, _user.value!!.id_spotify)
                 try {
-                    val joinRoomResult = joinRoomDeferred.await()
-                    if (joinRoomResult == null) {
-                        _error.value = joinRoomDeferred.getCompletionExceptionOrNull()?.message
-                    } else {
-                        _gameRoom.value = joinRoomResult
+                    deleteUserFromAllRooms()
+                    val joinRoomDeferred = firebase.addUserToRoom(roomCode, _user.value!!.id_spotify)
+                    try {
+                        val joinRoomResult = joinRoomDeferred.await()
+                        if (joinRoomResult == null) {
+                            _error.value = joinRoomDeferred.getCompletionExceptionOrNull()?.message
+                        } else {
+                            _gameRoom.value = joinRoomResult
+                        }
+                    } catch (exception: Exception) {
+                        _error.value = exception.message
                     }
                 } catch (exception: Exception) {
                     _error.value = exception.message

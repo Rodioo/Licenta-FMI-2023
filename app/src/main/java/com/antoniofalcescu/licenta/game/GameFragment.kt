@@ -17,8 +17,8 @@ import com.antoniofalcescu.licenta.utils.getSpacing
 
 //TODO: posibil sa adaug field isOwner in firestore cand creezi tu joc ca sa poti da kick la altii ingame
 //TODO: verificat cand si dc da 401 cateodata random (posibil sa nu reinitalizeze bine token-ul)
-//TODO: in onStop scot uSerul din camera si salvez in ce camera a fost pt ca in onStart sa il bag inapoi daca gaseste salvat in savedInstanceState
-//TODO: cand un user da join/create la o camera il scot din toate celelalte camere din firebase in care era
+//TODO: cand fac feature-ul de a vizita profilul unui alt jucator din camera sa trimit si atunci codul camerei
+//TODO: de gandit cum sa arate UI-ul la quiz si de facut request-urile a.i sa primesc cel putin 10-15 intrebari cu sample != null
 class GameFragment : Fragment() {
 
     private lateinit var binding: FragmentGameBinding
