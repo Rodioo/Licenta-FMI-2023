@@ -40,10 +40,15 @@ class GameFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
-        usersAdapter = UserAdapter {
-                Log.e("user", it)
+        viewModel.currentUser.observe(viewLifecycleOwner) {currentUser ->
+            if (currentUser != null) {
+                usersAdapter = UserAdapter(currentUser) {
+                    Log.e("user", it)
+                }
+                binding.usersRecycler.adapter = usersAdapter
+            }
         }
-        binding.usersRecycler.adapter = usersAdapter
+
         binding.usersRecycler.addItemDecoration(
             RecyclerViewSpacing(requireContext().getSpacing(Spacing.EXTRA_LARGE), Orientation.HORIZONTAL, true)
         )
