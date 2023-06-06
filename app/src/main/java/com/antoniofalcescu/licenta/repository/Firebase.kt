@@ -8,7 +8,8 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CompletableDeferred
 
-const val FIREBASE_DELETE_EMPTY_ROOMS_INTERVAL: Long = 5 * 60 * 1000
+const val FIREBASE_DELETE_EMPTY_ROOMS_INTERVAL: Long = 3 * 60 * 1000
+const val CHECK_IF_USER_GOT_KICKED_FROM_ROOM_INTERVAL: Long = 2 * 1000
 
 class Firebase(application: Application) {
 

@@ -40,6 +40,14 @@ class GameViewModel(application: Application, gameRoomAux: GameRoom): AndroidVie
     val userIds: LiveData<List<String>>
         get() = _userIds
 
+    private val _userLeftMessage = MutableLiveData<String>()
+    val userLeftMessage: LiveData<String>
+        get() = _userLeftMessage
+
+    private val _userLeft = MutableLiveData<Boolean>()
+    val userLeft: LiveData<Boolean>
+        get() = _userLeft
+
     private val _users = MutableLiveData<List<User?>>()
     val users: LiveData<List<User?>>
         get() = _users
@@ -61,12 +69,12 @@ class GameViewModel(application: Application, gameRoomAux: GameRoom): AndroidVie
             getCurrentUser()
             while(true) {
                 getUsersFromRoom()
-                delay(5000L)
+                delay(2000L)
             }
         }
     }
 
-    fun getCurrentUser() {
+    private fun getCurrentUser() {
         coroutineScope.launch {
             val response = GuessifyApi.retrofitService.getCurrentUserProfile("Bearer ${accessToken!!.value}")
             withContext(Dispatchers.Main) {
@@ -137,7 +145,18 @@ class GameViewModel(application: Application, gameRoomAux: GameRoom): AndroidVie
         }
     }
 
-    fun rejoinRoom() {
+    fun checkIfUserLeft(): Boolean? {
+        return if (_userIds.value != null && currentUser.value != null) {
+            !(_userIds.value!!.contains(currentUser.value!!.id_spotify))
+        } else {
+            _error.value = "User/Room not found."
+            null
+        }
+    }
+
+    fun rejoinRoom(): CompletableDeferred<Unit> {
+        val rejoinRoomDeferred = CompletableDeferred<Unit>()
+
         coroutineScope.launch {
             var lastRoomCode: String? = null
             if (_gameRoomDao.value != null) {
@@ -160,7 +179,11 @@ class GameViewModel(application: Application, gameRoomAux: GameRoom): AndroidVie
                     _error.value = exception.message
                 }
             }
+
+            rejoinRoomDeferred.complete(Unit)
         }
+
+        return rejoinRoomDeferred
     }
 
     fun leaveRoom() {
@@ -177,6 +200,29 @@ class GameViewModel(application: Application, gameRoomAux: GameRoom): AndroidVie
                         }
                         _gameRoom.value = leaveRoomResult
                         _userIds.value = _gameRoom.value!!.users
+                    }
+                } catch (exception: Exception) {
+                    _error.value = exception.message
+                }
+            }
+        }
+    }
+
+    fun kickUserFromRoom(userId: String, kickInfo: String) {
+        coroutineScope.launch {
+            if (_gameRoom.value != null) {
+                val leaveRoomDeferred = firebase.removeUserFromRoom(_gameRoom.value!!.code, userId)
+                try {
+                    val leaveRoomResult = leaveRoomDeferred.await()
+                    if (leaveRoomResult == null) {
+                        _error.value = leaveRoomDeferred.getCompletionExceptionOrNull()?.message
+                    } else {
+                        if (_gameRoomDao.value != null && _gameRoom.value != null) {
+                            insertLastRoom(_gameRoomDao.value!!, _gameRoom.value!!.code)
+                        }
+                        _gameRoom.value = leaveRoomResult
+                        _userIds.value = _gameRoom.value!!.users
+                        _userLeftMessage.value = kickInfo
                     }
                 } catch (exception: Exception) {
                     _error.value = exception.message

@@ -22,30 +22,24 @@ class LocalDatabaseTest {
 
     @Before
     fun createDb() {
-        println("1")
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(context, LocalDatabase::class.java).allowMainThreadQueries().build()
 
         accessTokenDao = db.accessTokenDao
-        println("2")
     }
 
     @After
     @Throws(IOException::class)
     fun closeDb() {
-        println("5")
         db.close()
-        println("6")
     }
 
     @Test
     @Throws(Exception::class)
     fun saveAndGetAccessToken() {
-        println("3")
         val savedAccessToken = AccessToken(value = "test-token")
         accessTokenDao.save(savedAccessToken)
         val gottenAccessToken = accessTokenDao.get()
         assertEquals(gottenAccessToken.value, savedAccessToken.value)
-        println("4")
     }
 }

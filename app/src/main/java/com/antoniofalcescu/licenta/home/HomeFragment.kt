@@ -75,7 +75,6 @@ class HomeFragment : Fragment() {
         }
 
         binding.joinGameCodeButton.setOnClickListener {
-            Log.e("ceva", roomCode)
             viewModel.user.observe(viewLifecycleOwner) {
                 viewModel.joinRoom(roomCode)
             }

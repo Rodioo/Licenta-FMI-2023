@@ -39,8 +39,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewModelFactory: MainViewModelFactory
 
     private lateinit var launcher: ActivityResultLauncher<Intent>
-    private val accessTokenHandler = Handler(Looper.getMainLooper())
 
+    private val accessTokenHandler = Handler(Looper.getMainLooper())
     private val firebaseHandler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {

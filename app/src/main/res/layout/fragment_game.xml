@@ -70,75 +70,90 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/title_layout" />
 
-        <LinearLayout
+        <ScrollView
+            android:id="@+id/scroll_view"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:orientation="vertical"
             android:layout_marginTop="@dimen/extra_large_margin"
             android:layout_marginStart="@dimen/medium_margin"
-            android:layout_marginBottom="@dimen/bottom_nav_margin"
+            android:layout_marginBottom="@dimen/small_margin"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/separator"
             app:layout_constraintBottom_toBottomOf="parent">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/game_pin"
-                android:layout_gravity="center_horizontal"
-                android:textSize="@dimen/big_text"
-                android:textStyle="bold"
-
-                />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@{viewModel.gameRoom.code}"
-                android:layout_gravity="center_horizontal"
-                android:textSize="@dimen/title_text"
-                android:textStyle="bold"
-                />
-
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/small_margin">
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="@string/game_pin"
                     android:layout_gravity="center_horizontal"
-                    android:text="@string/game_mode"
-                    android:textSize="@dimen/medium_text"
-                    />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="@{viewModel.gameRoom.gamemode}"
-                    android:textSize="@dimen/medium_text"
-                    android:textAllCaps="true"
+                    android:textSize="@dimen/big_text"
                     android:textStyle="bold"
-                    android:layout_marginStart="@dimen/small_margin"
+
                     />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@{viewModel.gameRoom.code}"
+                    android:layout_gravity="center_horizontal"
+                    android:textSize="@dimen/title_text"
+                    android:textStyle="bold"
+                    />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="@dimen/small_margin">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="@string/game_mode"
+                        android:textSize="@dimen/medium_text"
+                        />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="@{viewModel.gameRoom.gamemode}"
+                        android:textSize="@dimen/medium_text"
+                        android:textAllCaps="true"
+                        android:textStyle="bold"
+                        android:layout_marginStart="@dimen/small_margin"
+                        />
+
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/users_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/medium_margin"
+                    android:orientation="vertical"
+                    app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                    app:spanCount="2"
+                    app:usersList="@{viewModel.users}" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/start_game_button"
+                    style="@style/button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/medium_margin"
+                    android:layout_gravity="center_horizontal"
+                    android:text="Start Game" />
+
 
             </LinearLayout>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/users_recycler"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:layout_marginTop="@dimen/medium_margin"
-                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                app:usersList="@{viewModel.users}"
-                app:spanCount="2"
-                />
-
-        </LinearLayout>
+        </ScrollView>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

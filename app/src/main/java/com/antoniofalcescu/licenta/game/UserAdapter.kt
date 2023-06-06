@@ -1,8 +1,11 @@
 package com.antoniofalcescu.licenta.game
 
+import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.antoniofalcescu.licenta.R
 import com.antoniofalcescu.licenta.databinding.UserItemViewBinding
@@ -10,6 +13,7 @@ import com.antoniofalcescu.licenta.home.User
 
 class UserAdapter(
     private val currentUser: User,
+    private val gameViewModel: GameViewModel,
     private val numberOfPlayers: Int = 4,
     private val onItemClick: (String) -> Unit
 ): RecyclerView.Adapter<UserAdapter.ViewHolder>() {
@@ -21,11 +25,14 @@ class UserAdapter(
         ): RecyclerView.ViewHolder(binding.root) {
         val userView = binding.userView
 
-        fun bind(user: User, currentUserIsOwner: Boolean, showOwnKickButton: Boolean) {
+        fun bind(currentLoggedUser: User, user: User, currentUserIsOwner: Boolean, showOwnKickButton: Boolean, gameViewModel: GameViewModel) {
             if (currentUserIsOwner || showOwnKickButton) {
                 binding.kickUserButton.visibility = View.VISIBLE
             } else {
                 binding.kickUserButton.visibility = View.GONE
+            }
+            binding.kickUserButton.setOnClickListener {
+                gameViewModel.kickUserFromRoom(user.id_spotify, "${currentLoggedUser.id_spotify}:${user.id_spotify}")
             }
             binding.user = user
             binding.executePendingBindings()
@@ -62,12 +69,13 @@ class UserAdapter(
         }
 
         if (user != null) {
-            holder.bind(user, currentUserIsOwner, showOwnKickButton)
+            holder.bind(currentUser, user, currentUserIsOwner, showOwnKickButton, gameViewModel)
         } else {
             holder.bindEmptyUser()
         }
 
         holder.userView.setOnClickListener {
+
             user?.let { onItemClick(it.toString()) }
         }
     }

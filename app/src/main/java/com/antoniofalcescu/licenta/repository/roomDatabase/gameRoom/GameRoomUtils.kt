@@ -1,5 +1,6 @@
 package com.antoniofalcescu.licenta.repository.roomDatabase.gameRoom
 
+import android.util.Log
 import kotlinx.coroutines.*
 
 private val viewModelJob = Job()
