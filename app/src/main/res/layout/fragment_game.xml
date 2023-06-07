@@ -74,13 +74,15 @@
             android:id="@+id/scroll_view"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginTop="@dimen/extra_large_margin"
             android:layout_marginStart="@dimen/medium_margin"
+            android:layout_marginTop="@dimen/extra_large_margin"
             android:layout_marginBottom="@dimen/small_margin"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/separator"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintVertical_bias="0.0">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -90,8 +92,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/game_pin"
                     android:layout_gravity="center_horizontal"
+                    android:text="@string/game_pin"
                     android:textSize="@dimen/big_text"
                     android:textStyle="bold"
 
@@ -100,11 +102,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@{viewModel.gameRoom.code}"
                     android:layout_gravity="center_horizontal"
+                    android:text="@{viewModel.gameRoom.code}"
                     android:textSize="@dimen/title_text"
-                    android:textStyle="bold"
-                    />
+                    android:textStyle="bold" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -117,19 +118,17 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
                         android:text="@string/game_mode"
-                        android:textSize="@dimen/medium_text"
-                        />
+                        android:textSize="@dimen/medium_text" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
-                        android:text="@{viewModel.gameRoom.gamemode}"
-                        android:textSize="@dimen/medium_text"
-                        android:textAllCaps="true"
-                        android:textStyle="bold"
                         android:layout_marginStart="@dimen/small_margin"
-                        />
+                        android:text="@{viewModel.gameRoom.gamemode}"
+                        android:textAllCaps="true"
+                        android:textSize="@dimen/medium_text"
+                        android:textStyle="bold" />
 
                 </LinearLayout>
 
@@ -148,9 +147,11 @@
                     style="@style/button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/medium_margin"
                     android:layout_gravity="center_horizontal"
-                    android:text="Start Game" />
+                    android:layout_marginTop="@dimen/medium_margin"
+                    android:text="@string/start_game"
+                    android:textAllCaps="true"
+                    android:visibility="gone" />
 
 
             </LinearLayout>

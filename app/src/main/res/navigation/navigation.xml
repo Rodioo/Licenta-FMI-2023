@@ -57,5 +57,9 @@
         android:id="@+id/questionFragment"
         android:name="com.antoniofalcescu.licenta.question.QuestionFragment"
         android:label="fragment_question"
-        tools:layout="@layout/fragment_question" />
+        tools:layout="@layout/fragment_question" >
+        <argument
+            android:name="gameRoom"
+            app:argType="com.antoniofalcescu.licenta.game.GameRoom" />
+    </fragment>
 </navigation>

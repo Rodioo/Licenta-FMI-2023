@@ -35,4 +35,9 @@
     <string name="game_room">Game Room</string>
     <string name="game_mode">Game Mode:</string>
     <string name="game_pin">Game PIN</string>
+    <string name="start_game">Start Game</string>
+    <string name="what_s_the_song">What\'s the song?</string>
+    <string name="who_s_the_artist">Who\'s the artist?</string>
+    <string name="please_wait_while_we_load_the_songs">Please wait while we load the songs</string>
+    <string name="game_will_start">Game will start in</string>
 </resources>

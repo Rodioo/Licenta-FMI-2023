@@ -68,8 +68,25 @@ class GameFragment : Fragment() {
             usersAdapter.submitList(users)
         }
 
-        viewModel.userIds.observe(viewLifecycleOwner) {
+        viewModel.userIds.observe(viewLifecycleOwner) {userIds ->
+            if (userIds.indexOf(viewModel.currentUser.value?.id_spotify) == 0) {
+                binding.startGameButton.visibility = View.VISIBLE
+            } else {
+                binding.startGameButton.visibility = View.GONE
+            }
             viewModel.getUsersProfiles()
+        }
+
+        binding.startGameButton.setOnClickListener {
+            viewModel.startRoom()
+        }
+
+        viewModel.gameRoom.observe(viewLifecycleOwner) { gameRoom ->
+            if (gameRoom.hasStarted) {
+                view?.findNavController()?.navigate(
+                    GameFragmentDirections.actionGameFragmentToQuestionFragment(gameRoom)
+                )
+            }
         }
 
         val backButtonCallback = object : OnBackPressedCallback(true) {

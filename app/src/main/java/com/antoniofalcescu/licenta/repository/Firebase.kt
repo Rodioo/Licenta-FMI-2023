@@ -4,7 +4,9 @@ import android.app.Application
 import android.util.Log
 import com.antoniofalcescu.licenta.game.GameRoom
 import com.antoniofalcescu.licenta.home.User
+import com.antoniofalcescu.licenta.question.Question
 import com.google.firebase.FirebaseApp
+import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CompletableDeferred
 
@@ -76,6 +78,38 @@ class Firebase(application: Application) {
                     "HomeViewModel",
                     "Failed to add room: ${gameRoom.code}: ${exception.message}"
                 )
+                deferred.completeExceptionally(exception)
+            }
+
+        return deferred
+    }
+
+    fun getRoom(roomCode: String): CompletableDeferred<GameRoom?> {
+        val deferred = CompletableDeferred<GameRoom?>()
+
+        firebaseInstance.collection("rooms").document(roomCode).get()
+            .addOnSuccessListener { roomSnapshot ->
+                val updatedGameRoom = roomSnapshot.toObject(GameRoom::class.java)
+                deferred.complete(updatedGameRoom)
+            }
+            .addOnFailureListener { exception ->
+                Log.e("updateRoomWithUser", "Failed to get updated room: $roomCode: ${exception.message}")
+                deferred.completeExceptionally(exception)
+            }
+
+        return deferred
+    }
+
+    fun updateRoom(roomCode: String, updates: HashMap<String, Any>): CompletableDeferred<Boolean> {
+        val deferred = CompletableDeferred<Boolean>()
+
+        firebaseInstance.collection("rooms").document(roomCode)
+            .update(updates)
+            .addOnSuccessListener {
+                deferred.complete(true)
+            }
+            .addOnFailureListener { exception ->
+                Log.e("updateRoomHasStarted", "Failed to update room: $roomCode: ${exception.message}")
                 deferred.completeExceptionally(exception)
             }
 
@@ -258,4 +292,96 @@ class Firebase(application: Application) {
 
         return deferred
     }
+
+    fun addQuestions(questions: List<Question>): CompletableDeferred<Boolean> {
+        val deferred = CompletableDeferred<Boolean>()
+
+        val batch = firebaseInstance.batch()
+
+        for (question in questions) {
+            val questionRef = firebaseInstance.collection("questions").document(question.id)
+            batch.set(questionRef, question)
+        }
+
+        batch.commit()
+            .addOnSuccessListener {
+                deferred.complete(true)
+            }
+            .addOnFailureListener { exception ->
+                Log.e("HomeViewModel", "Failed to add questions: ${exception.message}")
+                deferred.completeExceptionally(exception)
+            }
+
+        return deferred
+    }
+
+    fun addQuestionsToRoom(roomCode: String, questionIds: List<String>): CompletableDeferred<GameRoom?> {
+        val deferred = CompletableDeferred<GameRoom?>()
+
+        val roomRef = firebaseInstance.collection("rooms").document(roomCode)
+
+        firebaseInstance.runTransaction { transaction ->
+            val roomSnapshot = transaction.get(roomRef)
+
+            if (roomSnapshot.exists()) {
+                transaction.update(roomRef, "questions", questionIds)
+            } else {
+                // Room doesn't exist
+                deferred.complete(null)
+            }
+        }
+            .addOnSuccessListener {
+                roomRef.get()
+                    .addOnSuccessListener { roomSnapshot ->
+                        val updatedGameRoom = roomSnapshot.toObject(GameRoom::class.java)
+                        deferred.complete(updatedGameRoom)
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.e("addedQuestionsToRoom", "Failed to get updated room: $roomCode: ${exception.message}")
+                        deferred.completeExceptionally(exception)
+                    }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("addedQuestionsToRoom", "Failed to update room: $roomCode: ${exception.message}")
+                deferred.completeExceptionally(exception)
+            }
+
+        return deferred
+    }
+
+    fun getQuestionsFromRoom(roomCode: String): CompletableDeferred<List<Question>> {
+        val deferred = CompletableDeferred<List<Question>>()
+
+        firebaseInstance.collection("rooms")
+            .document(roomCode)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    val gameRoom = documentSnapshot.toObject(GameRoom::class.java)
+                    val questionIds = gameRoom?.questions ?: emptyList()
+
+                    if (!questionIds.isNullOrEmpty()) {
+                        firebaseInstance.collection("questions")
+                            .whereIn(FieldPath.documentId(), questionIds)
+                            .get()
+                            .addOnSuccessListener {questionSnapshot ->
+                                val questions = questionSnapshot.toObjects(Question::class.java)
+                                deferred.complete(questions)
+                            }
+                            .addOnFailureListener { exception ->
+                                Log.e("Firestore", "Failed to fetch questions: ${exception.message}")
+                                deferred.completeExceptionally(exception)
+                            }
+                    }
+                } else {
+                    deferred.complete(emptyList())
+                }
+            }
+            .addOnFailureListener { exception ->
+                deferred.completeExceptionally(exception)
+            }
+
+        return deferred
+    }
+
 }

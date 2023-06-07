@@ -181,8 +181,11 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
                         } else {
                             val gameRoom = GameRoom(
                                 generateRoomCode(getUsedCodesResult),
+                                hasStarted = false,
+                                doneLoading = false,
                                 gameMode,
-                                mutableListOf(_user.value?.id_spotify).filterNotNull()
+                                mutableListOf(_user.value?.id_spotify).filterNotNull(),
+                                emptyList()
                             )
 
                             val addRoomDeferred = firebase.addRoom(gameRoom)
@@ -216,7 +219,8 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
                     try {
                         val joinRoomResult = joinRoomDeferred.await()
                         if (joinRoomResult == null) {
-                            _error.value = joinRoomDeferred.getCompletionExceptionOrNull()?.message
+                            _error.value = "The room does not exist"
+
                         } else {
                             _gameRoom.value = joinRoomResult
                         }

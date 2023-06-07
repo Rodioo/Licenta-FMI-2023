@@ -15,6 +15,5 @@
         <item name="android:colorControlHighlight">@color/md_theme_dark_primaryContainer</item>
         <item name="android:colorControlNormal">@color/md_theme_dark_onPrimaryContainer</item>
         <item name="android:textSize">18sp</item>
-        <!-- Add any other customizations you want -->
     </style>
 </resources>

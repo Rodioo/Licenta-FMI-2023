@@ -67,6 +67,8 @@ interface GuessifyApiService {
         @Header("Authorization") accessToken: String,
         @Query("seed_artists") artistsId: String = "",
         @Query("seed_tracks") tracksId: String = "",
+        @Query("seed_genres") genres: String = "",
+        @Query("min_popularity") minPopularity: Int = 50,
         @Query("limit") limit: Int = 1
     ): Response<DiscoverTrack>
 

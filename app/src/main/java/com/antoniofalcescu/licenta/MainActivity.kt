@@ -110,6 +110,9 @@ class MainActivity : AppCompatActivity() {
     private fun reinitializeAccessToken() {
         val currentTime = System.currentTimeMillis()
 
+        viewModel.accessToken.observe(this ) {
+           Log.e("token", it.toString())
+        }
         if (viewModel.accessToken.value?.value == null
             || viewModel.accessToken.value!!.expiresAt <= currentTime + ACCESS_TOKEN_REFRESH_MARGIN
             || viewModel.accessToken.value!!.needsRefresh) {

@@ -15,6 +15,7 @@ import com.antoniofalcescu.licenta.profile.artists.ArtistsAdapter
 import com.antoniofalcescu.licenta.profile.recentlyPlayedTracks.RecentlyPlayedAdapter
 import com.antoniofalcescu.licenta.profile.tracks.TrackItem
 import com.antoniofalcescu.licenta.profile.tracks.TracksAdapter
+import com.antoniofalcescu.licenta.question.QuestionAnswerAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
@@ -90,4 +91,10 @@ fun bindGenresRecyclerView(recyclerView: RecyclerView, data: List<GenreItem>?) {
 fun bindUsersRecyclerView(recyclerView: RecyclerView, data: List<User?>?) {
     val adapter = recyclerView.adapter as? UserAdapter
     adapter?.submitList(data)
+}
+
+@BindingAdapter("questionAnswersList")
+fun bindQuestionAnswersRecyclerView(recyclerView: RecyclerView, data: List<String>?) {
+    val adapter = recyclerView.adapter as QuestionAnswerAdapter
+    adapter.submitList(data)
 }

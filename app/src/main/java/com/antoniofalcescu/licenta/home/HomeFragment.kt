@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.NumberPicker
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
@@ -84,6 +85,10 @@ class HomeFragment : Fragment() {
             view?.findNavController()?.navigate(
                 HomeFragmentDirections.actionHomeFragmentToGameFragment(gameRoom!!)
             )
+        }
+
+        viewModel.error.observe(viewLifecycleOwner) {error ->
+            Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
         }
 
         val backButtonCallback = object : OnBackPressedCallback(true) {

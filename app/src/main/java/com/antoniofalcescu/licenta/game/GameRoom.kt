@@ -6,8 +6,11 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class GameRoom(
     val code: String,
+    val hasStarted: Boolean,
+    val doneLoading: Boolean,
     val gamemode: String,
     val users: List<String>,
+    val questions: List<String>
 ): Parcelable {
-    constructor() : this("", "", emptyList())
+    constructor() : this("", false, false,"", emptyList(), emptyList())
 }

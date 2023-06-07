@@ -25,6 +25,7 @@ class GameViewModel(application: Application, gameRoomAux: GameRoom): AndroidVie
     private val _gameRoomDao = MutableLiveData<GameRoomCodeDao?>()
     val gameRoomDao: LiveData<GameRoomCodeDao?>
         get() = _gameRoomDao
+
     private val accessTokenDao: AccessTokenDao
     private var accessToken: AccessToken? = null
 
@@ -69,7 +70,8 @@ class GameViewModel(application: Application, gameRoomAux: GameRoom): AndroidVie
             getCurrentUser()
             while(true) {
                 getUsersFromRoom()
-                delay(2000L)
+                getRoom()
+                delay(500L)
             }
         }
     }
@@ -99,6 +101,24 @@ class GameViewModel(application: Application, gameRoomAux: GameRoom): AndroidVie
                     updateToken(accessTokenDao, true)
                     Log.e("getCurrentUserProfile_FAILURE", response.code().toString())
                     Log.e("getCurrentUserProfile_FAILURE", response.errorBody().toString())
+                }
+            }
+        }
+    }
+
+    private fun getRoom() {
+        coroutineScope.launch {
+            if (_gameRoom.value != null) {
+                val getRoomDeferred = firebase.getRoom(_gameRoom.value!!.code)
+                try {
+                    val getRoomResult = getRoomDeferred.await()
+                    if (getRoomResult == null) {
+                        _error.value = getRoomDeferred.getCompletionExceptionOrNull()?.message
+                    } else {
+                        _gameRoom.value = getRoomResult
+                    }
+                } catch (exception: Exception) {
+                    _error.value = exception.message
                 }
             }
         }
@@ -223,6 +243,25 @@ class GameViewModel(application: Application, gameRoomAux: GameRoom): AndroidVie
                         _gameRoom.value = leaveRoomResult
                         _userIds.value = _gameRoom.value!!.users
                         _userLeftMessage.value = kickInfo
+                    }
+                } catch (exception: Exception) {
+                    _error.value = exception.message
+                }
+            }
+        }
+    }
+
+    fun startRoom() {
+        coroutineScope.launch {
+            if (_gameRoom.value != null) {
+                val updates = hashMapOf<String, Any>(
+                    "hasStarted" to true
+                )
+                val startRoomDeferred = firebase.updateRoom(_gameRoom.value!!.code, updates)
+                try {
+                    val startRoomResult = startRoomDeferred.await()
+                    if (!startRoomResult) {
+                        _error.value = startRoomDeferred.getCompletionExceptionOrNull()?.message
                     }
                 } catch (exception: Exception) {
                     _error.value = exception.message
