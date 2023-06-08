@@ -45,6 +45,10 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
     val gameQuestions: LiveData<GameQuestions>
         get() = _gameQuestions
 
+    private val _questionsProfileZipped = MutableLiveData<List<Pair<String, String>>>()
+    val questionsProfileZipped: LiveData<List<Pair<String, String>>>
+        get() = _questionsProfileZipped
+
     init {
         firebase = Firebase(application)
 
@@ -65,6 +69,11 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                 getRoom()
                 delay(500L)
             }
+
+            if (_gameQuestions.value != null) {
+                getQuestionsProfileZipped(_gameQuestions.value!!.questions[0])
+            }
+
         }
     }
 
@@ -111,6 +120,14 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                 } catch (exception: Exception) {
                     _error.value = exception.message
                 }
+            }
+        }
+    }
+
+    fun getQuestionsProfileZipped(question: Question) {
+        if (_currentUser.value != null) {
+            _questionsProfileZipped.value = question.answers.map {
+                it to _currentUser.value!!.image_url
             }
         }
     }
@@ -241,6 +258,29 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                     val startRoomResult = startRoomDeferred.await()
                     if (!startRoomResult) {
                         _error.value = startRoomDeferred.getCompletionExceptionOrNull()?.message
+                    }
+                } catch (exception: Exception) {
+                    _error.value = exception.message
+                }
+            }
+        }
+    }
+
+    fun onUserAnswer(question: Question, points: Int) {
+        coroutineScope.launch {
+            if (_gameRoom.value != null && _currentUser.value != null) {
+                try {
+                    val addAnswerDeferred = firebase.addAnswerToRoom(_gameRoom.value!!.code, _currentUser.value!!.id_spotify, question.id, points)
+                    try {
+                        val addAnswerResult = addAnswerDeferred.await()
+                        if (addAnswerResult == null) {
+                            _error.value = "The room does not exist"
+
+                        } else {
+                            _gameRoom.value = addAnswerResult
+                        }
+                    } catch (exception: Exception) {
+                        _error.value = exception.message
                     }
                 } catch (exception: Exception) {
                     _error.value = exception.message

@@ -7,24 +7,42 @@
         <variable
             name="answer"
             type="String" />
+        <variable
+            name="profile_url"
+            type="String" />
     </data>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:backgroundTint="@color/md_theme_dark_onPrimary"
+        android:background="@drawable/rounded_rectangle"
+        android:padding="@dimen/button_padding"
+        >
+
+        <ImageView
+            android:id="@+id/profile_image"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/circular_image"
+            app:circleImageUrl="@{profile_url}"
+            app:srcCompat="@drawable/loading_animation"
+            tools:srcCompat="@drawable/loading_animation"
+            android:visibility="gone"
+            />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/answer_button"
             style="@style/button"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="64dp"
             android:textSize="@dimen/big_text"
             android:text="@{answer}"
             android:gravity="center"
+            android:textColor="@color/md_theme_dark_background"
             android:backgroundTint="@color/md_theme_dark_onPrimary"
-            android:textColor="@color/md_theme_dark_background" />
+            android:layout_toEndOf="@+id/profile_image" />
 
     </RelativeLayout>
-
 </layout>

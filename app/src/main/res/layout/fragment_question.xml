@@ -180,9 +180,7 @@
                     android:layout_marginTop="@dimen/extra_large_margin"
                     android:orientation="vertical"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    app:questionAnswersList="@{viewModel.gameQuestions.questions[0].answers}" />
-
-
+                    app:questionAnswersList="@{viewModel.questionsProfileZipped}" />
 
             </LinearLayout>
         </ScrollView>

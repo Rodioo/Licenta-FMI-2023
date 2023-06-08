@@ -20,6 +20,11 @@ import com.antoniofalcescu.licenta.utils.getSpacing
 
 private const val MAX_TIME_TO_GUESS: Long = 10 * 1000
 
+//TODO: de facut o formula pt generat scor in functie de timer-ul ramas
+//TODO: de adaugat optiunea de raspuns (posibil sa bag icon-uri mici cu pozele jucatorilor pe varianta aleasa)
+//TODO: dupa fiecare intrebare sa apara clasament cu +cate puncte ia fiecare
+//TODO: de adaugat in firestore in users documents scorul curent
+//TODO: de facut request-urile pentru melodii si de la most listened songs/artists
 class QuestionFragment : Fragment() {
 
     private lateinit var binding: FragmentQuestionBinding
@@ -34,6 +39,7 @@ class QuestionFragment : Fragment() {
     private val songHandler = Handler(Looper.getMainLooper())
 
     private var isFocused = true
+    private var points: Int = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,15 +54,12 @@ class QuestionFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
-        questionAnswerAdapter = QuestionAnswerAdapter {}
-        binding.questionAnswersRecycler.adapter = questionAnswerAdapter
         binding.questionAnswersRecycler.addItemDecoration(
-            RecyclerViewSpacing(requireContext().getSpacing(Spacing.LARGE), Orientation.VERTICAL)
+                RecyclerViewSpacing(requireContext().getSpacing(Spacing.LARGE), Orientation.VERTICAL)
         )
 
-
         viewModel.gameRoom.observe(viewLifecycleOwner) {gameRoom ->
-            if (gameRoom.doneLoading) {
+            if (gameRoom.doneLoading && (viewModel.gameQuestions.value == null || viewModel.gameQuestions.value!!.questions.isEmpty())) {
                 viewModel.getQuestionsFromRoom()
             }
         }
@@ -100,6 +103,9 @@ class QuestionFragment : Fragment() {
         val timer = object : CountDownTimer(MAX_TIME_TO_GUESS, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val secondsRemaining = millisUntilFinished / 1000
+
+                points = (millisUntilFinished / 10).toInt()
+
                 if (secondsRemaining == 10L) {
                     binding.guessTimeLeftText.text = "0:$secondsRemaining"
                 } else {
@@ -108,17 +114,23 @@ class QuestionFragment : Fragment() {
             }
 
             override fun onFinish() {
-
+                points = 0
             }
         }
 
         if (currentQuestionIndex < questions.size) {
             val question = questions[currentQuestionIndex]
 
-            questionAnswerAdapter.submitList(question.answers)
+            questionAnswerAdapter = QuestionAnswerAdapter {
+                 userAnswered(question, it)
+            }
+            binding.questionAnswersRecycler.adapter = questionAnswerAdapter
+
+            viewModel.getQuestionsProfileZipped(question)
+            viewModel.questionsProfileZipped.observe(viewLifecycleOwner) { questionsProfileZipped ->
+                questionAnswerAdapter.submitList(questionsProfileZipped)
+            }
             playSongSample(question.previewUrl)
-
-
 
             timer.start()
 
@@ -152,6 +164,16 @@ class QuestionFragment : Fragment() {
             mediaPlayer.pause()
             binding.questionView.visibility = View.GONE
         }
+    }
+
+    private fun userAnswered(question: Question, answer: String) {
+        val pointsToInsert = if (question.correctAnswer == answer) {
+            points
+        } else {
+            0
+        }
+
+        viewModel.onUserAnswer(question, pointsToInsert)
     }
 
     override fun onStart() {

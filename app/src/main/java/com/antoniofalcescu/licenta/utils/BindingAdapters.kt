@@ -94,7 +94,7 @@ fun bindUsersRecyclerView(recyclerView: RecyclerView, data: List<User?>?) {
 }
 
 @BindingAdapter("questionAnswersList")
-fun bindQuestionAnswersRecyclerView(recyclerView: RecyclerView, data: List<String>?) {
-    val adapter = recyclerView.adapter as QuestionAnswerAdapter
-    adapter.submitList(data)
+fun bindQuestionAnswersRecyclerView(recyclerView: RecyclerView, data: List<Pair<String, String>>?) {
+    val adapter = recyclerView.adapter as? QuestionAnswerAdapter
+    adapter?.submitList(data)
 }

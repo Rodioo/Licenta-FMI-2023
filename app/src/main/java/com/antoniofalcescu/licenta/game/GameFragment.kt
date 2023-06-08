@@ -23,7 +23,6 @@ import com.antoniofalcescu.licenta.utils.getSpacing
 import kotlinx.coroutines.launch
 
 //TODO: cand fac feature-ul de a vizita profilul unui alt jucator din camera sa trimit si atunci codul camerei
-//TODO: de gandit cum sa arate UI-ul la quiz si de facut request-urile a.i sa primesc cel putin 10-15 intrebari cu sample != null
 //TODO: posibil un bug apare cand iesi prea repede (pana sa-si dea insert roomCode in bd locala te rebaga in camera veche, dar e relativ ok ca daca nu mai exista isi ia kick oricum)
 class GameFragment : Fragment() {
 
@@ -135,7 +134,8 @@ class GameFragment : Fragment() {
         super.onStop()
 
         userLeftHandler.removeCallbacksAndMessages(null)
-
-        viewModel.leaveRoom()
+        if (viewModel.gameRoom.value?.hasStarted == false ) {
+            viewModel.leaveRoom()
+        }
     }
 }

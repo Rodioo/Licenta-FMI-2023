@@ -179,13 +179,23 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
                         if (getUsedCodesResult.isEmpty()) {
                             _error.value = getUsedCodesDeferred.getCompletionExceptionOrNull()?.message
                         } else {
+
+                            val answers: HashMap<String, HashMap<String, Int>> = hashMapOf(
+                                _user.value!!.id_spotify to HashMap()
+                            )
+                            val totalPoints: HashMap<String, Int> = hashMapOf(
+                                _user.value!!.id_spotify to 0
+                            )
+
                             val gameRoom = GameRoom(
                                 generateRoomCode(getUsedCodesResult),
                                 hasStarted = false,
                                 doneLoading = false,
                                 gameMode,
                                 mutableListOf(_user.value?.id_spotify).filterNotNull(),
-                                emptyList()
+                                emptyList(),
+                                answers,
+                                totalPoints
                             )
 
                             val addRoomDeferred = firebase.addRoom(gameRoom)
