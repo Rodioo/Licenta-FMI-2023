@@ -15,7 +15,7 @@
         tools:context=".home.HomeFragment">
 
         <LinearLayout
-            android:id="@+id/linearLayout2"
+            android:id="@+id/title_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/top_title_margin"
@@ -67,7 +67,7 @@
             android:background="@color/md_theme_dark_primary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
+            app:layout_constraintTop_toBottomOf="@+id/title_layout" />
 
         <LinearLayout
             android:id="@+id/start_game_layout"
@@ -80,10 +80,11 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/separator">
+            app:layout_constraintTop_toBottomOf="@+id/separator"
+            android:visibility="visible">
 
             <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/create_game"
+                android:id="@+id/create_game_button"
                 style="@style/button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -93,7 +94,7 @@
                 android:textSize="@dimen/button_big_text_size" />
 
             <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/join_game"
+                android:id="@+id/join_game_button"
                 style="@style/button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -103,6 +104,178 @@
                 android:textAllCaps="true"
                 android:textSize="@dimen/button_big_text_size" />
         </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/create_game_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/medium_margin"
+            android:layout_marginTop="@dimen/extra_large_margin"
+            android:layout_marginEnd="@dimen/medium_margin"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/separator"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/game_mode_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/select_the_game_mode"
+                android:textSize="@dimen/big_text"
+                android:textStyle="bold"
+                android:textAllCaps="true"/>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/genres_game_button"
+                style="@style/button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/music_genres"
+                android:textAllCaps="true"
+                android:textSize="@dimen/button_big_text_size"
+                android:layout_marginTop="@dimen/large_margin"/>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/top_tracks_game_button"
+                style="@style/button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/large_margin"
+                android:text="@string/most_listened_songs"
+                android:textAllCaps="true"
+                android:textSize="@dimen/button_big_text_size" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/top_artists_game_button"
+                style="@style/button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/large_margin"
+                android:text="@string/most_listened_artists"
+                android:textAllCaps="true"
+                android:textSize="@dimen/button_big_text_size" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/join_game_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/medium_margin"
+            android:layout_marginTop="@dimen/extra_large_margin"
+            android:layout_marginEnd="@dimen/medium_margin"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/separator"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/join_code_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Enter the room code"
+                android:textSize="@dimen/big_text"
+                android:textStyle="bold"
+                android:textAllCaps="true"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <NumberPicker
+                    android:id="@+id/first_digit_room_code_picker"
+                    style="@style/numberPicker"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:minValue="@{0}"
+                    android:maxValue="@{9}" />
+
+                <NumberPicker
+                    android:id="@+id/second_digit_room_code_picker"
+                    style="@style/numberPicker"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="@dimen/small_margin"
+                    android:minValue="@{0}"
+                    android:maxValue="@{9}" />
+
+                <NumberPicker
+                    android:id="@+id/third_digit_room_code_picker"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="@dimen/small_margin"
+                    android:minValue="@{0}"
+                    android:maxValue="@{9}" />
+
+                <NumberPicker
+                    android:id="@+id/fourth_digit_room_code_picker"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="@dimen/small_margin"
+                    android:minValue="@{0}"
+                    android:maxValue="@{9}" />
+            </LinearLayout>
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/join_game_code_button"
+                style="@style/button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/large_margin"
+                android:text="@string/join_game"
+                android:textAllCaps="true"
+                android:textSize="@dimen/button_big_text_size" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/genres_view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="@dimen/medium_margin"
+            android:layout_marginTop="@dimen/medium_margin"
+            android:layout_marginEnd="@dimen/medium_margin"
+            android:layout_marginBottom="@dimen/bottom_nav_margin"
+            android:orientation="vertical"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/separator">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/choose_a_genre"
+                android:textSize="@dimen/big_text"
+                android:textStyle="bold"
+                android:textAllCaps="true"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/genres_recycler"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_marginTop="@dimen/medium_margin"
+                app:genresList="@{viewModel.genres.items}"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                app:spanCount="2" />
+        </LinearLayout>
+
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

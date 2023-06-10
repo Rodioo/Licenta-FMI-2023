@@ -7,6 +7,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.antoniofalcescu.licenta.databinding.FragmentProfileBinding
@@ -38,7 +40,7 @@ class ProfileFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
-        tracksAdapter = TracksAdapter() {
+        tracksAdapter = TracksAdapter {
             trackUrl -> openSpotifyLink(trackUrl)
         }
         binding.topTracksRecycler.adapter = tracksAdapter
@@ -80,6 +82,8 @@ class ProfileFragment : Fragment() {
         }
 
         updateUI()
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {}
 
         return binding.root
     }

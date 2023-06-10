@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -12,26 +11,23 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import androidx.navigation.findNavController
-import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.antoniofalcescu.licenta.databinding.ActivityMainBinding
 import com.antoniofalcescu.licenta.login.*
-import com.antoniofalcescu.licenta.repository.accessToken.AccessToken
+import com.antoniofalcescu.licenta.repository.FIREBASE_DELETE_EMPTY_ROOMS_INTERVAL
+import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.ACCESS_TOKEN_REFRESH_INTERVAL
+import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.ACCESS_TOKEN_REFRESH_MARGIN
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
-private const val ACCESS_TOKEN_REFRESH_MARGIN: Long = 15 * 60 * 1000
-private const val ACCESS_TOKEN_REFRESH_INTERVAL: Long = 60 * 1000
 
+
+//TODO: add try/catch for error when user fails to connect to spotify api (no/bad internet)
 //TODO: refactor the code in here and inside login fragment (DRY)
 class MainActivity : AppCompatActivity() {
 
@@ -43,7 +39,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewModelFactory: MainViewModelFactory
 
     private lateinit var launcher: ActivityResultLauncher<Intent>
-    private val handler = Handler(Looper.getMainLooper())
+
+    private val accessTokenHandler = Handler(Looper.getMainLooper())
+    private val firebaseHandler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,17 +70,23 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        handler.postDelayed(object: Runnable {
+        accessTokenHandler.postDelayed(object: Runnable {
             override fun run() {
                 reinitializeAccessToken()
-                handler.postDelayed(this, ACCESS_TOKEN_REFRESH_INTERVAL)
+                accessTokenHandler.postDelayed(this, ACCESS_TOKEN_REFRESH_INTERVAL)
             }
         }, ACCESS_TOKEN_REFRESH_INTERVAL)
+
+        firebaseHandler.postDelayed(object: Runnable {
+            override fun run() {
+                viewModel.deleteEmptyRooms()
+                firebaseHandler.postDelayed(this, FIREBASE_DELETE_EMPTY_ROOMS_INTERVAL)
+            }
+        }, FIREBASE_DELETE_EMPTY_ROOMS_INTERVAL)
 
         viewModel.accessToken.observe(this) { accessToken ->
             val currentTime = System.currentTimeMillis()
             if (accessToken != null && accessToken.expiresAt > currentTime + ACCESS_TOKEN_REFRESH_MARGIN && !accessToken.needsRefresh) {
-                Log.e("ceva", "1")
                 navController.navigate(R.id.profileFragment)
             } else {
                 try {
@@ -98,11 +102,14 @@ class MainActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
 
-        viewModel.accessToken.value?.value?.let { viewModel.saveAccessToken(it) }
+        viewModel.accessToken.value?.value?.let {
+            viewModel.saveAccessToken(it)
+        }
     }
 
     private fun reinitializeAccessToken() {
         val currentTime = System.currentTimeMillis()
+
         if (viewModel.accessToken.value?.value == null
             || viewModel.accessToken.value!!.expiresAt <= currentTime + ACCESS_TOKEN_REFRESH_MARGIN
             || viewModel.accessToken.value!!.needsRefresh) {
@@ -122,18 +129,23 @@ class MainActivity : AppCompatActivity() {
             val response = AuthorizationClient.getResponse(result.resultCode, result.data)
             when (response.type) {
                 AuthorizationResponse.Type.TOKEN -> {
-                    viewModel.saveAccessToken(response.accessToken)
+                    viewModel.saveAndGetAccessToken(response.accessToken)
                     Toast.makeText(this, "Reinitialized Spotify Connection", Toast.LENGTH_SHORT).show()
                     navController.navigate(R.id.profileFragment)
                 }
                 AuthorizationResponse.Type.ERROR -> {
                     Log.e("token_auth", response.error)
+                    navController.navigate(R.id.loginFragment)
                     Toast.makeText(this, "Failed to reinitialize Spotify Connection.\n Please restart the application.", Toast.LENGTH_LONG).show()
                 }
                 else -> {
+                    navController.navigate(R.id.loginFragment)
                     Log.e("token_auth", response.type.toString())
                 }
             }
+        } else {
+            navController.navigate(R.id.loginFragment)
+            Log.e("token_auth", "null")
         }
     }
 
@@ -146,6 +158,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        handler.removeCallbacksAndMessages(null)
+        accessTokenHandler.removeCallbacksAndMessages(null)
+        firebaseHandler.removeCallbacksAndMessages(null)
     }
 }

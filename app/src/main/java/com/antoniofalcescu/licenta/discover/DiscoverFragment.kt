@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
 import com.antoniofalcescu.licenta.databinding.FragmentDiscoverBinding
 import com.antoniofalcescu.licenta.profile.artists.ArtistsAdapter
@@ -93,14 +94,18 @@ class DiscoverFragment : Fragment() {
         }
 
         binding.discoverAgainButton.setOnClickListener {
-            recommendedBasedOn = "none"
-            areRecommendedSongsVisible = false
-
             if (mediaPlayer.isPlaying) {
                 mediaPlayer.stop()
             }
-
-            discoverUtilsUI.updateUIDiscoverAgain()
+            if (recommendedBasedOn == "tracks") {
+                viewModel.track.observe(viewLifecycleOwner) {
+                    viewModel.getCurrentUserRecommendations(true)
+                }
+            } else if (recommendedBasedOn == "artists") {
+                viewModel.artist.observe(viewLifecycleOwner) {
+                    viewModel.getCurrentUserRecommendations(false)
+                }
+            }
         }
 
         binding.playSampleButton.setOnClickListener {
@@ -132,6 +137,18 @@ class DiscoverFragment : Fragment() {
                 discoverUtilsUI.updateUIDiscoverAgain()
             }
         }
+
+        val backButtonCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (recommendedBasedOn == "tracks" || recommendedBasedOn == "artists") {
+                    recommendedBasedOn = "none"
+                    stopSongSample()
+                    discoverUtilsUI.updateUIDiscoverAgain()
+                }
+            }
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, backButtonCallback)
 
         return binding.root
     }
@@ -182,12 +199,15 @@ class DiscoverFragment : Fragment() {
         }
     }
 
-
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean("areRecommendedSongsVisible", areRecommendedSongsVisible)
         outState.putString("recommendedBasedOn", recommendedBasedOn)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        stopSongSample()
     }
 
     override fun onDestroy() {

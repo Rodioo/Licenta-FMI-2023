@@ -27,4 +27,20 @@
     <string name="join_game">Join game</string>
     <string name="guessify">Guessify</string>
     <string name="pwd_by">Pwd. by</string>
+    <string name="select_the_game_mode">Select the game mode</string>
+    <string name="music_genres">Music Genres</string>
+    <string name="most_listened_songs">Most Listened Songs</string>
+    <string name="most_listened_artists">Most Listened Artists</string>
+    <string name="choose_a_genre">Choose a genre</string>
+    <string name="game_room">Game Room</string>
+    <string name="game_mode">Game Mode:</string>
+    <string name="game_pin">Game PIN</string>
+    <string name="start_game">Start Game</string>
+    <string name="what_s_the_song">What\'s the song?</string>
+    <string name="who_s_the_artist">Who\'s the artist?</string>
+    <string name="please_wait_while_we_load_the_songs">Please wait while we load the songs</string>
+    <string name="game_will_start">Game will start in</string>
+    <string name="please_wait_for_everybody_to_finish_guessing">Please wait for everybody to finish guessing</string>
+    <string name="this_is_the_final_leaderboard">This is the final leaderboard</string>
+    <string name="the_winner_is">The winner is...</string>
 </resources>

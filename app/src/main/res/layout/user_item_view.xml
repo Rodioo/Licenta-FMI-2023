@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="user"
+            type="com.antoniofalcescu.licenta.home.User" />
+    </data>
+
+    <RelativeLayout
+        android:id="@+id/user_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/layout_border"
+        android:padding="12dp"
+        >
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center"
+        >
+            <ImageView
+                android:id="@+id/profile_image"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:background="@drawable/circular_image"
+                app:circleImageUrl="@{user.image_url}"
+                app:srcCompat="@drawable/baseline_person_add_alt_1_24"
+                tools:srcCompat="@drawable/baseline_person_add_alt_1_24" />
+
+            <TextView
+                android:id="@+id/profile_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@{user.name}"
+                android:textSize="@dimen/big_text"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/kick_user_button"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/baseline_cancel_24"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            app:tint="@color/md_theme_dark_errorContainer" />
+    </RelativeLayout>
+
+</layout>

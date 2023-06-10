@@ -9,11 +9,13 @@ import com.antoniofalcescu.licenta.profile.artists.Artist
 import com.antoniofalcescu.licenta.profile.currentlyPlayingTrack.CurrentlyPlayingTrack
 import com.antoniofalcescu.licenta.profile.recentlyPlayedTracks.RecentlyPlayedTrack
 import com.antoniofalcescu.licenta.profile.tracks.Track
-import com.antoniofalcescu.licenta.repository.GuessifyApi
-import com.antoniofalcescu.licenta.repository.accessToken.AccessToken
-import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDao
-import com.antoniofalcescu.licenta.repository.accessToken.AccessTokenDatabase
+import com.antoniofalcescu.licenta.repository.*
+import com.antoniofalcescu.licenta.repository.roomDatabase.LocalDatabase
+import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.*
+import com.antoniofalcescu.licenta.utils.EMPTY_PROFILE_IMAGE_URL
+import com.antoniofalcescu.licenta.utils.SpotifyImage
 import kotlinx.coroutines.*
+import java.net.SocketTimeoutException
 
 //TODO: Look for a way to reduce the workload on the UI thread
 class ProfileViewModel(application: Application): AndroidViewModel(application) {
@@ -33,7 +35,6 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     val track: LiveData<Track>
         get() = _track
 
-
     private val _artist = MutableLiveData<Artist>()
     val artist: LiveData<Artist>
         get() = _artist
@@ -46,14 +47,18 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     val currentTrack: LiveData<CurrentlyPlayingTrack>
         get() = _currentTrack
 
+    private val _error = MutableLiveData<String>()
+    val error: LiveData<String>
+        get() = _error
+
     init {
-        accessTokenDao = AccessTokenDatabase.getInstance(application).accessTokenDao
+
+        accessTokenDao = LocalDatabase.getInstance(application).accessTokenDao
 
         coroutineScope.launch {
             if (accessToken?.value == null) {
-                accessToken = getAccessToken()
+                accessToken = getAccessToken(accessTokenDao)
             }
-            Log.e("profile", accessToken.toString())
             getCurrentUserProfile()
             getCurrentUserTopTracks()
             getCurrentUserTopArtists()
@@ -62,25 +67,27 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
         }
     }
 
-    private suspend fun getAccessToken(): AccessToken {
-        return withContext(dbScope.coroutineContext) {
-            accessTokenDao.get()
-        }
-    }
-
     private fun getCurrentUserProfile() {
         coroutineScope.launch {
-            Log.e("profile_call", accessToken.toString())
             val response = GuessifyApi.retrofitService.getCurrentUserProfile("Bearer ${accessToken!!.value}")
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Log.e("getCurrentUserProfile_SUCCESS", response.body().toString())
                     _profile.value = response.body()
-                    updateToken(false)
+
+                    val imageUrl = if (response.body()?.images?.size == 0) {
+                        EMPTY_PROFILE_IMAGE_URL
+                    } else {
+                        response.body()?.images?.get(0)?.url ?: EMPTY_PROFILE_IMAGE_URL
+                    }
+
+                    _profile.value = _profile.value?.copy(images = listOf(SpotifyImage(imageUrl)))
+
+                    updateToken(accessTokenDao, false)
                 } else {
-                    updateToken(true)
+                    updateToken(accessTokenDao, true)
                     Log.e("getCurrentUserProfile_FAILURE", response.code().toString())
-                    Log.e("getCurrentUserProfile_FAILURE", response.message().toString())
+                    Log.e("getCurrentUserProfile_FAILURE", response.errorBody().toString())
                 }
             }
         }
@@ -140,24 +147,25 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     private fun getCurrentUserCurrentlyPlayingTrack() {
         coroutineScope.launch {
             while(true) {
-                val response = GuessifyApi.retrofitService.getCurrentUserCurrentlyPlayingTrack("Bearer ${accessToken!!.value}")
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful) {
-                        Log.e("getCurrentUserCurrentlyPlayedTrack_SUCCESS", response.body().toString())
-                        _currentTrack.value = response.body()
-                    } else {
-                        Log.e("getCurrentUserCurrentlyPlayedTrack_FAILURE", response.code().toString())
-                        Log.e("getCurrentUserCurrentlyPlayedTrack_FAILURE", response.errorBody().toString())
+                try {
+                    val response = GuessifyApi.retrofitService.getCurrentUserCurrentlyPlayingTrack("Bearer ${accessToken!!.value}")
+                    withContext(Dispatchers.Main) {
+                        if (response.isSuccessful) {
+                            Log.e("getCurrentUserCurrentlyPlayedTrack_SUCCESS", response.body().toString())
+                            _currentTrack.value = response.body()
+                            updateToken(accessTokenDao, false)
+                        } else {
+                            updateToken(accessTokenDao, true)
+                            Log.e("getCurrentUserCurrentlyPlayedTrack_FAILURE", response.code().toString())
+                            Log.e("getCurrentUserCurrentlyPlayedTrack_FAILURE", response.errorBody().toString())
+                        }
                     }
+                } catch (e: SocketTimeoutException) {
+                    Log.e("getCurrentUserCurrentlyPlayedTrack_TIMEOUT", e.message.toString())
+                    // Handle the timeout exception here, you can log or perform any necessary actions
                 }
                 delay(5_000L)
             }
-        }
-    }
-
-    private fun updateToken(needsRefresh: Boolean) {
-        dbScope.launch {
-            accessTokenDao.updateRefresh(needsRefresh)
         }
     }
 

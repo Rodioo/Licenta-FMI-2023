@@ -1,6 +1,8 @@
 package com.antoniofalcescu.licenta.repository
 
 import com.antoniofalcescu.licenta.discover.DiscoverTrack
+import com.antoniofalcescu.licenta.home.AvailableGenre
+import com.antoniofalcescu.licenta.home.FilterGenres
 import com.antoniofalcescu.licenta.profile.Profile
 import com.antoniofalcescu.licenta.profile.recentlyPlayedTracks.RecentlyPlayedTrack
 import com.antoniofalcescu.licenta.profile.artists.Artist
@@ -13,6 +15,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 private const val BASE_URL = "https://api.spotify.com/v1/"
@@ -29,6 +32,12 @@ private val retrofit = Retrofit.Builder()
 interface GuessifyApiService {
     @GET(value= "me")
     suspend fun getCurrentUserProfile(@Header("Authorization") accessToken: String): Response<Profile>
+
+    @GET(value= "users/{id}")
+    suspend fun getUserProfile(
+        @Header("Authorization") accessToken: String,
+        @Path("id") idSpotify: String
+    ): Response<Profile>
 
     @GET(value= "me/top/tracks")
     suspend fun getCurrentUserTopTracks(
@@ -59,8 +68,21 @@ interface GuessifyApiService {
         @Header("Authorization") accessToken: String,
         @Query("seed_artists") artistsId: String = "",
         @Query("seed_tracks") tracksId: String = "",
+        @Query("seed_genres") genres: String = "",
+        @Query("min_popularity") minPopularity: Int = 50,
         @Query("limit") limit: Int = 1
     ): Response<DiscoverTrack>
+
+    @GET(value= "browse/categories")
+    suspend fun getGenres(
+        @Header("Authorization") accessToken: String,
+        @Query("limit") limit: Int = 50
+    ): Response<AvailableGenre>
+
+    @GET(value= "recommendations/available-genre-seeds")
+    suspend fun getFilterGenres(
+        @Header("Authorization") accessToken: String,
+    ): Response<FilterGenres>
 }
 
 object GuessifyApi {
