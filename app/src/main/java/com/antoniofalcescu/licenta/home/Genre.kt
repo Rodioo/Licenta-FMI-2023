@@ -1,5 +1,9 @@
 package com.antoniofalcescu.licenta.home
 
+data class FilterGenres(
+    val genres: List<String>
+)
+
 data class AvailableGenre(
     val categories: Genre
 )

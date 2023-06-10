@@ -11,20 +11,24 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.antoniofalcescu.licenta.R
 import com.antoniofalcescu.licenta.databinding.FragmentQuestionBinding
 import com.antoniofalcescu.licenta.game.*
 import com.antoniofalcescu.licenta.utils.Orientation
 import com.antoniofalcescu.licenta.utils.RecyclerViewSpacing
 import com.antoniofalcescu.licenta.utils.Spacing
 import com.antoniofalcescu.licenta.utils.getSpacing
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private const val MAX_TIME_TO_GUESS: Long = 10 * 1000
+private const val LEADERBOARD_SHOW_TIME: Long = 4 * 1000
 
-//TODO: de facut o formula pt generat scor in functie de timer-ul ramas
-//TODO: de adaugat optiunea de raspuns (posibil sa bag icon-uri mici cu pozele jucatorilor pe varianta aleasa)
-//TODO: dupa fiecare intrebare sa apara clasament cu +cate puncte ia fiecare
-//TODO: de adaugat in firestore in users documents scorul curent
 //TODO: de facut request-urile pentru melodii si de la most listened songs/artists
+//TODO: de reparat bug zice +0 puncte la primul jucator care raspunde
+//TODO: posibil sa trebuiasca adaugat flag in firebase la fel cu doneLoading sau cv de genul
+//TODO: buggy si la screen-ul de asteptare ca toti sa raspunda
 class QuestionFragment : Fragment() {
 
     private lateinit var binding: FragmentQuestionBinding
@@ -32,6 +36,7 @@ class QuestionFragment : Fragment() {
     private lateinit var viewModelFactory: QuestionViewModelFactory
 
     private lateinit var questionAnswerAdapter: QuestionAnswerAdapter
+    private lateinit var leaderboardAdapter: LeaderboardAdapter
 
     private lateinit var gameRoom: GameRoom
 
@@ -39,7 +44,13 @@ class QuestionFragment : Fragment() {
     private val songHandler = Handler(Looper.getMainLooper())
 
     private var isFocused = true
-    private var points: Int = 0
+    private var points = 0
+    private var currentQuestionIndex = 0
+    private lateinit var questions: List<Question>
+
+    private var questionTimer: CountDownTimer? = null
+    private var leaderboardTimer: CountDownTimer? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,6 +68,9 @@ class QuestionFragment : Fragment() {
         binding.questionAnswersRecycler.addItemDecoration(
                 RecyclerViewSpacing(requireContext().getSpacing(Spacing.LARGE), Orientation.VERTICAL)
         )
+        binding.leaderboardRecycler.addItemDecoration(
+            RecyclerViewSpacing(requireContext().getSpacing(Spacing.SMALL), Orientation.VERTICAL)
+        )
 
         viewModel.gameRoom.observe(viewLifecycleOwner) {gameRoom ->
             if (gameRoom.doneLoading && (viewModel.gameQuestions.value == null || viewModel.gameQuestions.value!!.questions.isEmpty())) {
@@ -66,41 +80,20 @@ class QuestionFragment : Fragment() {
 
         viewModel.gameQuestions.observe(viewLifecycleOwner) { gameQuestions ->
             if (gameQuestions.questions.isNotEmpty()) {
-                showQuestionView(true, gameQuestions.questions)
+                questions = gameQuestions.questions
+                showQuestionView(true)
             } else {
-                showQuestionView(false, emptyList())
+                showQuestionView(false)
             }
         }
 
-        return binding.root
-    }
-
-    private fun playSongSample(previewUrl: String) {
-        mediaPlayer.apply {
-            reset()
-            setOnPreparedListener { mp ->
-                mp.start()
-                if (!isFocused) {
-                    mp.setVolume(0f, 0f)
-                } else {
-                    mp.setVolume(1f, 1f)
-                }
-            }
-            setOnErrorListener { mp, _, _ ->
-                Log.e("MediaPlayer", "Error occurred during preparation")
-                false
-            }
-            try {
-                setDataSource(previewUrl)
-                prepare()
-            } catch (e: Exception) {
-                Log.e("MediaPlayer", "Error setting data source: ${e.message}")
+        viewModel.userHasAnswered.observe(viewLifecycleOwner) { userHasAnswered ->
+            if (userHasAnswered) {
+                showLeaderboardView(true)
             }
         }
-    }
 
-    private fun playNextQuestion(currentQuestionIndex: Int, questions: List<Question>) {
-        val timer = object : CountDownTimer(MAX_TIME_TO_GUESS, 1000) {
+        questionTimer = object : CountDownTimer(MAX_TIME_TO_GUESS, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val secondsRemaining = millisUntilFinished / 1000
 
@@ -115,35 +108,69 @@ class QuestionFragment : Fragment() {
 
             override fun onFinish() {
                 points = 0
+                mediaPlayer.pause()
+                userAnswered("")
             }
         }
 
-        if (currentQuestionIndex < questions.size) {
-            val question = questions[currentQuestionIndex]
+        return binding.root
+    }
 
-            questionAnswerAdapter = QuestionAnswerAdapter {
-                 userAnswered(question, it)
+    private fun playSongSample(previewUrl: String) {
+        mediaPlayer.apply {
+            reset()
+            questionTimer?.cancel()
+            setOnPreparedListener { mp ->
+                mp.start()
+                questionTimer?.start()
+                if (!isFocused) {
+                    mp.setVolume(0f, 0f)
+                } else {
+                    mp.setVolume(1f, 1f)
+                }
             }
-            binding.questionAnswersRecycler.adapter = questionAnswerAdapter
-
-            viewModel.getQuestionsProfileZipped(question)
-            viewModel.questionsProfileZipped.observe(viewLifecycleOwner) { questionsProfileZipped ->
-                questionAnswerAdapter.submitList(questionsProfileZipped)
+            setOnErrorListener { mp, _, _ ->
+                questionTimer?.cancel()
+                Log.e("MediaPlayer", "Error occurred during preparation")
+                false
             }
-            playSongSample(question.previewUrl)
-
-            timer.start()
-
-            songHandler.postDelayed({
-                mediaPlayer.pause()
-                val incrementedIndex = currentQuestionIndex + 1
-                playNextQuestion(incrementedIndex, questions)
-            }, MAX_TIME_TO_GUESS)
+            try {
+                setDataSource(previewUrl)
+                prepare()
+            } catch (e: Exception) {
+                Log.e("MediaPlayer", "Error setting data source: ${e.message}")
+            }
         }
     }
 
-    private fun showQuestionView(isVisible: Boolean, questions: List<Question>) {
+    private fun playNextQuestion() {
+        showLeaderboardView(false)
+
+        if (currentQuestionIndex < questions.size) {
+            val question = questions[currentQuestionIndex]
+            viewModel.syncQuestion(question)
+
+            questionAnswerAdapter = QuestionAnswerAdapter {
+                questionTimer?.cancel()
+                mediaPlayer.pause()
+                userAnswered(it)
+            }
+            binding.questionAnswersRecycler.adapter = questionAnswerAdapter
+
+            //TODO: bug aici ca dupa ce nu raspunzi la o melodie urmatoarea melodie o sa apara altceva pt o secunda si dupa revine la normal
+            viewModel.getQuestionsProfileZipped(question) {
+                questionAnswerAdapter.submitList(viewModel.questionsProfileZipped.value!!)
+            }
+
+            playSongSample(question.previewUrl)
+
+            questionTimer?.start()
+        }
+    }
+
+    private fun showQuestionView(isVisible: Boolean) {
         binding.songsLoading.visibility = if (isVisible) View.GONE else View.VISIBLE
+        binding.waitText.text = resources.getString(R.string.please_wait_while_we_load_the_songs)
         binding.startingSoonView.visibility = if (isVisible) View.VISIBLE else View.GONE
         if (isVisible) {
             val timer = object : CountDownTimer(3 * 1000, 1000) {
@@ -155,7 +182,7 @@ class QuestionFragment : Fragment() {
                 override fun onFinish() {
                     binding.startingSoonView.visibility = View.GONE
                     binding.questionView.visibility = View.VISIBLE
-                    playNextQuestion(0, questions)
+                    playNextQuestion()
                 }
             }
             timer.start()
@@ -166,14 +193,55 @@ class QuestionFragment : Fragment() {
         }
     }
 
-    private fun userAnswered(question: Question, answer: String) {
-        val pointsToInsert = if (question.correctAnswer == answer) {
+    private fun showLeaderboardView(isVisible: Boolean) {
+        if (isVisible) {
+            val leaderboardTimer = object : CountDownTimer(LEADERBOARD_SHOW_TIME, 1000) {
+                override fun onTick(millisUntilFinished: Long) {}
+
+                override fun onFinish() {
+                    currentQuestionIndex++
+                    Log.e("leaderboard", currentQuestionIndex.toString())
+                    playNextQuestion()
+                }
+            }
+            val question = questions[currentQuestionIndex]
+
+            binding.questionView.visibility = View.GONE
+            binding.songsLoading.visibility = View.VISIBLE
+            binding.waitText.text = resources.getString(R.string.please_wait_for_everybody_to_finish_guessing)
+
+            var hasRanOnce = false
+
+            viewModel.everybodyAnswered.observe(viewLifecycleOwner) {everybodyAnswered ->
+                if (everybodyAnswered && !hasRanOnce) {
+                    hasRanOnce = true
+                    binding.songsLoading.visibility = View.GONE
+                    binding.leaderboardView.visibility = View.VISIBLE
+
+                    leaderboardAdapter = LeaderboardAdapter()
+                    binding.leaderboardRecycler.adapter = leaderboardAdapter
+
+                    viewModel.getLeaderboardZipped(question) {
+                        leaderboardAdapter.submitList(viewModel.leaderboardZipped.value!!)
+                    }
+
+                    leaderboardTimer.start()
+                }
+            }
+        } else {
+            binding.leaderboardView.visibility = View.GONE
+            binding.questionView.visibility = View.VISIBLE
+        }
+    }
+
+    private fun userAnswered(answer: String) {
+        val pointsToInsert = if (questions[currentQuestionIndex].correctAnswer == answer) {
             points
         } else {
             0
         }
 
-        viewModel.onUserAnswer(question, pointsToInsert)
+        viewModel.onUserAnswer(questions[currentQuestionIndex], pointsToInsert)
     }
 
     override fun onStart() {
@@ -186,13 +254,10 @@ class QuestionFragment : Fragment() {
         super.onStop()
         isFocused = false
         mediaPlayer.setVolume(0f, 0f)
-
     }
 
     override fun onDestroy() {
         super.onDestroy()
-
-        songHandler.removeCallbacksAndMessages(null)
         mediaPlayer.release()
     }
 }

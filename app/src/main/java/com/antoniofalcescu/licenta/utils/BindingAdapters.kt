@@ -5,6 +5,7 @@ import androidx.core.net.toUri
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.antoniofalcescu.licenta.R
+import com.antoniofalcescu.licenta.game.GameRoom
 import com.antoniofalcescu.licenta.game.UserAdapter
 import com.antoniofalcescu.licenta.home.GenreAdapter
 import com.antoniofalcescu.licenta.home.GenreItem
@@ -15,6 +16,8 @@ import com.antoniofalcescu.licenta.profile.artists.ArtistsAdapter
 import com.antoniofalcescu.licenta.profile.recentlyPlayedTracks.RecentlyPlayedAdapter
 import com.antoniofalcescu.licenta.profile.tracks.TrackItem
 import com.antoniofalcescu.licenta.profile.tracks.TracksAdapter
+import com.antoniofalcescu.licenta.question.LeaderboardAdapter
+import com.antoniofalcescu.licenta.question.Question
 import com.antoniofalcescu.licenta.question.QuestionAnswerAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
@@ -96,5 +99,11 @@ fun bindUsersRecyclerView(recyclerView: RecyclerView, data: List<User?>?) {
 @BindingAdapter("questionAnswersList")
 fun bindQuestionAnswersRecyclerView(recyclerView: RecyclerView, data: List<Pair<String, String>>?) {
     val adapter = recyclerView.adapter as? QuestionAnswerAdapter
+    adapter?.submitList(data)
+}
+
+@BindingAdapter("leaderboardList")
+fun bindLeaderboardRecyclerView(recyclerView: RecyclerView, data: List<Triple<User, GameRoom, Question>>?) {
+    val adapter = recyclerView.adapter as? LeaderboardAdapter
     adapter?.submitList(data)
 }

@@ -36,6 +36,9 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
     val currentUser: LiveData<User?>
         get() = _currentUser
 
+    private val _users = MutableLiveData<List<User?>>()
+    val users: LiveData<List<User?>>
+        get() = _users
 
     private val _gameRoom = MutableLiveData(gameRoomAux)
     val gameRoom: LiveData<GameRoom>
@@ -45,9 +48,25 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
     val gameQuestions: LiveData<GameQuestions>
         get() = _gameQuestions
 
+    private val _currentQuestion = MutableLiveData<Question>()
+    val currentQuestion: LiveData<Question>
+        get() = _currentQuestion
+
+    private val _leaderboardZipped = MutableLiveData<List<Triple<User?, GameRoom, Question>>>()
+    val leaderboardZipped: LiveData<List<Triple<User?, GameRoom, Question>>>
+        get() = _leaderboardZipped
+
     private val _questionsProfileZipped = MutableLiveData<List<Pair<String, String>>>()
     val questionsProfileZipped: LiveData<List<Pair<String, String>>>
         get() = _questionsProfileZipped
+
+    private val _userHasAnswered = MutableLiveData(false)
+    val userHasAnswered: LiveData<Boolean>
+        get() = _userHasAnswered
+
+    private val _everybodyAnswered = MutableLiveData(false)
+    val everybodyAnswered: LiveData<Boolean>
+        get() = _everybodyAnswered
 
     init {
         firebase = Firebase(application)
@@ -65,16 +84,23 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                 insertQuestions()
             }
 
-            while(_gameRoom.value?.doneLoading != true) {
-                getRoom()
-                delay(500L)
-            }
+            getUsersProfiles()
 
             if (_gameQuestions.value != null) {
-                getQuestionsProfileZipped(_gameQuestions.value!!.questions[0])
+                getQuestionsProfileZipped(_gameQuestions.value!!.questions[0]) {}
             }
 
+            while(true) {
+                getRoom()
+                delay(200L)
+            }
         }
+    }
+
+    fun syncQuestion(question: Question) {
+        _currentQuestion.value = question
+        _userHasAnswered.value = false
+        _everybodyAnswered.value = false
     }
 
     private fun getCurrentUserAsync(): Deferred<User?> = coroutineScope.async {
@@ -106,6 +132,29 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
         }
     }
 
+    private fun getUsersProfiles() {
+        val usersAux = mutableListOf<User>()
+        coroutineScope.launch {
+            if (_gameRoom.value != null) {
+                _gameRoom.value!!.users.map {idSpotify ->
+                    val getUserDeferred = firebase.getUser(idSpotify)
+                    try {
+                        val getUserResult = getUserDeferred.await()
+                        if (getUserResult == null) {
+                            _error.value = getUserDeferred.getCompletionExceptionOrNull()?.message
+                        } else {
+                            usersAux.add(getUserResult)
+                        }
+                    } catch (exception: Exception) {
+                        _error.value = exception.message
+                    }
+
+                }
+            }
+            _users.value = usersAux
+        }
+    }
+
     private fun getRoom() {
         coroutineScope.launch {
             if (_gameRoom.value != null) {
@@ -116,6 +165,7 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                         _error.value = getRoomDeferred.getCompletionExceptionOrNull()?.message
                     } else {
                         _gameRoom.value = getRoomResult
+                        checkIfEverybodyAnswered(getRoomResult)
                     }
                 } catch (exception: Exception) {
                     _error.value = exception.message
@@ -124,12 +174,38 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
         }
     }
 
-    fun getQuestionsProfileZipped(question: Question) {
+    fun checkIfEverybodyAnswered(gameRoom: GameRoom) {
+        if (_currentQuestion.value != null) {
+            val allUsersInRoom = gameRoom.users.toSet()
+            val usersWhoAnswered = mutableSetOf<String>()
+
+            for ((userId, answer) in gameRoom.answers) {
+                if (answer.containsKey(_currentQuestion.value!!.id)) {
+                    usersWhoAnswered.add(userId)
+                }
+            }
+
+            _everybodyAnswered.value = allUsersInRoom == usersWhoAnswered
+        }
+    }
+
+
+    fun getQuestionsProfileZipped(question: Question, completion: () -> Unit) {
         if (_currentUser.value != null) {
             _questionsProfileZipped.value = question.answers.map {
                 it to _currentUser.value!!.image_url
             }
         }
+        completion()
+    }
+
+    fun getLeaderboardZipped(question: Question, completion: () -> Unit) {
+        if (_users.value != null && _gameRoom.value != null) {
+            _leaderboardZipped.value = _users.value!!.map {user ->
+                Triple(user, _gameRoom.value!!, question)
+            }
+        }
+        completion()
     }
 
     private suspend fun getIncorrectQuestionAnswers(correctAnswerId: String): List<String> {
@@ -176,6 +252,7 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                                     val incorrectAnswers = getIncorrectQuestionAnswers(track.id)
                                     val question = Question(
                                         track.id,
+                                        track.album.images[0].url,
                                         track.preview_url,
                                         track.name,
                                         (mutableListOf(track.name) + incorrectAnswers).shuffled()
@@ -238,7 +315,7 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                     if (getQuestionsFromRoomResult.isNullOrEmpty()) {
                         _error.value = getQuestionsFromRoomDeferred.getCompletionExceptionOrNull()?.message
                     } else {
-                        _gameQuestions.value = GameQuestions(getQuestionsFromRoomResult)
+                        _gameQuestions.value = GameQuestions(getQuestionsFromRoomResult.sortedBy { it.id })
                     }
                 } catch (exception: Exception) {
                     _error.value = exception.message
@@ -278,6 +355,7 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
 
                         } else {
                             _gameRoom.value = addAnswerResult
+                            _userHasAnswered.value = true
                         }
                     } catch (exception: Exception) {
                         _error.value = exception.message

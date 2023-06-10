@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
         firebaseHandler.postDelayed(object: Runnable {
             override fun run() {
                 viewModel.deleteEmptyRooms()
-                accessTokenHandler.postDelayed(this, FIREBASE_DELETE_EMPTY_ROOMS_INTERVAL)
+                firebaseHandler.postDelayed(this, FIREBASE_DELETE_EMPTY_ROOMS_INTERVAL)
             }
         }, FIREBASE_DELETE_EMPTY_ROOMS_INTERVAL)
 
@@ -135,12 +135,17 @@ class MainActivity : AppCompatActivity() {
                 }
                 AuthorizationResponse.Type.ERROR -> {
                     Log.e("token_auth", response.error)
+                    navController.navigate(R.id.loginFragment)
                     Toast.makeText(this, "Failed to reinitialize Spotify Connection.\n Please restart the application.", Toast.LENGTH_LONG).show()
                 }
                 else -> {
+                    navController.navigate(R.id.loginFragment)
                     Log.e("token_auth", response.type.toString())
                 }
             }
+        } else {
+            navController.navigate(R.id.loginFragment)
+            Log.e("token_auth", "null")
         }
     }
 

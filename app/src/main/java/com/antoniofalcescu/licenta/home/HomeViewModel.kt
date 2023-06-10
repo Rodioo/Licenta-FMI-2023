@@ -33,6 +33,10 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
     val user: LiveData<User?>
         get() = _user
 
+    private val _filterGenres = MutableLiveData<FilterGenres>()
+    val filterGenres: LiveData<FilterGenres>
+        get() = _filterGenres
+
     private val _genres = MutableLiveData<Genre>()
     val genres: LiveData<Genre>
         get() = _genres
@@ -52,6 +56,7 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
                 accessToken = getAccessToken(accessTokenDao)
             }
             getCurrentUser()
+            getFilteredGenres()
         }
     }
 
@@ -124,27 +129,46 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    fun getGameGenres() {
+    private fun getFilteredGenres() {
         coroutineScope.launch {
-            val response = GuessifyApi.retrofitService.getGenres(
+            val response = GuessifyApi.retrofitService.getFilterGenres(
                 "Bearer ${accessToken!!.value}",
             )
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
-                    Log.e("getGenres_SUCCESS", response.body().toString())
-                    val filteredCategories = response.body()?.categories?.items?.filter { item ->
-                        val excludedNames = listOf("Party", "Cooking & Dining", "EQUAL", "Frequency")
-                        !excludedNames.contains(item.name)
-                    }
-
-                    val filteredGenre = filteredCategories?.let {
-                        Genre(items = it)
-                    }?: Genre(items = emptyList())
-
-                    _genres.value = filteredGenre
+                    Log.e("getFilterGenre_SUCCESS", response.body().toString())
+                    _filterGenres.value = response.body()
                 } else {
-                    Log.e("getGenres_FAILURE", response.code().toString())
-                    Log.e("getGenres_FAILURE", response.errorBody().toString())
+                    Log.e("getFilterGenre_FAILURE", response.code().toString())
+                    Log.e("getFilterGenre_FAILURE", response.errorBody().toString())
+                }
+            }
+        }
+    }
+
+    fun getGameGenres() {
+        if (_filterGenres.value != null) {
+            coroutineScope.launch {
+                val response = GuessifyApi.retrofitService.getGenres(
+                    "Bearer ${accessToken!!.value}",
+                )
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        Log.e("getGenres_SUCCESS", response.body().toString())
+                        val filteredCategories = response.body()?.categories?.items?.filter { item ->
+                            !listOf("Party", "Sleep").contains(item.name) &&
+                            _filterGenres.value!!.genres.contains(item.name.lowercase().replace(" ", "-").replace("&", "-n-"))
+                        }
+
+                        val filteredGenre = filteredCategories?.let {
+                            Genre(items = it)
+                        }?: Genre(items = emptyList())
+
+                        _genres.value = filteredGenre
+                    } else {
+                        Log.e("getGenres_FAILURE", response.code().toString())
+                        Log.e("getGenres_FAILURE", response.errorBody().toString())
+                    }
                 }
             }
         }
