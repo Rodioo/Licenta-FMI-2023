@@ -269,4 +269,9 @@ class GameViewModel(application: Application, gameRoomAux: GameRoom): AndroidVie
             }
         }
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        viewModelJob.cancel()
+    }
 }

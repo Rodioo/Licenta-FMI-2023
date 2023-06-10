@@ -168,6 +168,61 @@ class Firebase(application: Application) {
         return deferred
     }
 
+    fun resetRoomStatus(roomCode: String): CompletableDeferred<GameRoom?> {
+        val deferred = CompletableDeferred<GameRoom?>()
+
+        val roomRef = firebaseInstance.collection("rooms").document(roomCode)
+
+        firebaseInstance.runTransaction { transaction ->
+            val roomSnapshot = transaction.get(roomRef)
+
+            if (roomSnapshot.exists()) {
+
+                transaction.update(roomRef, "doneLoading", false)
+                transaction.update(roomRef, "hasStarted", false)
+                transaction.update(roomRef, "questions", emptyList<String>())
+
+                val answers = roomSnapshot.toObject(GameRoom::class.java)?.answers?.toMutableMap()
+                if (answers != null) {
+                    for (userId in answers.keys) {
+                        answers[userId] = hashMapOf()
+                    }
+                }
+
+                transaction.update(roomRef, "answers", answers)
+
+                val totalPoints = roomSnapshot.toObject(GameRoom::class.java)?.totalPoints?.toMutableMap()
+                if (totalPoints != null) {
+                    for (userId in totalPoints.keys) {
+                        totalPoints[userId] = 0
+                    }
+                }
+
+                transaction.update(roomRef, "totalPoints", totalPoints)
+            } else {
+                // Room doesn't exist
+                deferred.complete(null)
+            }
+        }
+            .addOnSuccessListener {
+                roomRef.get()
+                    .addOnSuccessListener { roomSnapshot ->
+                        val updatedGameRoom = roomSnapshot.toObject(GameRoom::class.java)
+                        deferred.complete(updatedGameRoom)
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.e("updateRoomWithAnswer", "Failed to get updated room: $roomCode: ${exception.message}")
+                        deferred.completeExceptionally(exception)
+                    }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("updateRoomWithAnswer", "Failed to update room: $roomCode: ${exception.message}")
+                deferred.completeExceptionally(exception)
+            }
+
+        return deferred
+    }
+
     fun deleteEmptyRooms() {
         firebaseInstance.collection("rooms").get()
             .addOnSuccessListener { querySnapshot ->
@@ -205,26 +260,31 @@ class Firebase(application: Application) {
             val roomSnapshot = transaction.get(roomRef)
 
             if (roomSnapshot.exists()) {
-                val userList = roomSnapshot.toObject(GameRoom::class.java)?.users?.toMutableList()
-                if (userList != null && !userList.contains(userId)) {
-                    userList.add(userId)
+                val gameRoom = roomSnapshot.toObject(GameRoom::class.java)
+                if (gameRoom?.hasStarted == true) {
+                    deferred.complete(null)
+                } else {
+                    val userList = roomSnapshot.toObject(GameRoom::class.java)?.users?.toMutableList()
+                    if (userList != null && !userList.contains(userId)) {
+                        userList.add(userId)
+                    }
+
+                    transaction.update(roomRef, "users", userList)
+
+                    val answers = roomSnapshot.toObject(GameRoom::class.java)?.answers?.toMutableMap()
+                    if (answers != null && !answers.containsKey(userId)) {
+                        answers[userId] = hashMapOf()
+                    }
+
+                    transaction.update(roomRef, "answers", answers)
+
+                    val totalPoints = roomSnapshot.toObject(GameRoom::class.java)?.totalPoints?.toMutableMap()
+                    if (totalPoints != null && !totalPoints.containsKey(userId)) {
+                        totalPoints[userId] = 0
+                    }
+
+                    transaction.update(roomRef, "totalPoints", totalPoints)
                 }
-
-                transaction.update(roomRef, "users", userList)
-
-                val answers = roomSnapshot.toObject(GameRoom::class.java)?.answers?.toMutableMap()
-                if (answers != null && !answers.containsKey(userId)) {
-                    answers[userId] = hashMapOf()
-                }
-
-                transaction.update(roomRef, "answers", answers)
-
-                val totalPoints = roomSnapshot.toObject(GameRoom::class.java)?.totalPoints?.toMutableMap()
-                if (totalPoints != null && !totalPoints.containsKey(userId)) {
-                    totalPoints[userId] = 0
-                }
-
-                transaction.update(roomRef, "totalPoints", totalPoints)
             } else {
                 // Room doesn't exist
                 deferred.complete(null)

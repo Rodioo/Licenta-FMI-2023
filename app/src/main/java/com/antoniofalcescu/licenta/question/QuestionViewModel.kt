@@ -15,8 +15,11 @@ import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.AccessTok
 import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.AccessTokenDao
 import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.getAccessToken
 import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.updateToken
+import com.antoniofalcescu.licenta.repository.roomDatabase.gameRoom.insertLastRoom
 import com.antoniofalcescu.licenta.utils.EMPTY_PROFILE_IMAGE_URL
 import kotlinx.coroutines.*
+
+private const val NUMBER_OF_SONGS = 10
 
 class QuestionViewModel(private val application: Application, gameRoomAux: GameRoom): AndroidViewModel(application) {
 
@@ -84,8 +87,6 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                 insertQuestions()
             }
 
-            getUsersProfiles()
-
             if (_gameQuestions.value != null) {
                 getQuestionsProfileZipped(_gameQuestions.value!!.questions[0]) {}
             }
@@ -152,6 +153,7 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                 }
             }
             _users.value = usersAux
+            Log.e("useri", _users.value.toString())
         }
     }
 
@@ -165,6 +167,7 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                         _error.value = getRoomDeferred.getCompletionExceptionOrNull()?.message
                     } else {
                         _gameRoom.value = getRoomResult
+                        getUsersProfiles()
                         checkIfEverybodyAnswered(getRoomResult)
                     }
                 } catch (exception: Exception) {
@@ -204,7 +207,9 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
             _leaderboardZipped.value = _users.value!!.map {user ->
                 Triple(user, _gameRoom.value!!, question)
             }
+            _leaderboardZipped.value = _leaderboardZipped.value?.sortedByDescending { it.second.totalPoints[it.first?.id_spotify] }
         }
+
         completion()
     }
 
@@ -248,7 +253,7 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                             Log.e("getQuestionTracks_SUCCESS", response.body().toString())
                             val questionsAux = mutableListOf<Question>()
                             response.body()!!.tracks.map {track ->
-                                if (!track.preview_url.isNullOrBlank() && questionsAux.size < 10) {
+                                if (!track.preview_url.isNullOrBlank() && questionsAux.size < NUMBER_OF_SONGS) {
                                     val incorrectAnswers = getIncorrectQuestionAnswers(track.id)
                                     val question = Question(
                                         track.id,
@@ -362,6 +367,45 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                     }
                 } catch (exception: Exception) {
                     _error.value = exception.message
+                }
+            }
+        }
+    }
+
+    fun leaveRoom() {
+        coroutineScope.launch {
+            if (_currentUser.value != null && _gameRoom.value != null) {
+                val leaveRoomDeferred = firebase.removeUserFromRoom(_gameRoom.value!!.code, _currentUser.value!!.id_spotify)
+                try {
+                    val leaveRoomResult = leaveRoomDeferred.await()
+                    if (leaveRoomResult == null) {
+                        _error.value = leaveRoomDeferred.getCompletionExceptionOrNull()?.message
+                    } else {
+                        _gameRoom.value = leaveRoomResult
+                    }
+                } catch (exception: Exception) {
+                    _error.value = exception.message
+                }
+            }
+        }
+    }
+
+    fun restartRoom(onSuccess: () -> Unit, onFailure: () -> Unit) {
+        coroutineScope.launch {
+            if (_gameRoom.value != null) {
+                val restartRoomDeferred = firebase.resetRoomStatus(_gameRoom.value!!.code)
+                try {
+                    val restartRoomResult = restartRoomDeferred.await()
+                    if (restartRoomResult == null) {
+                        _error.value = restartRoomDeferred.getCompletionExceptionOrNull()?.message
+                        onFailure()
+                    } else {
+                        _gameRoom.value = restartRoomResult
+                        onSuccess()
+                    }
+                } catch (exception: Exception) {
+                    _error.value = exception.message
+                    onFailure()
                 }
             }
         }

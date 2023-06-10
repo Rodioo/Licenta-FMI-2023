@@ -10,8 +10,10 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.findNavController
 import com.antoniofalcescu.licenta.R
 import com.antoniofalcescu.licenta.databinding.FragmentQuestionBinding
 import com.antoniofalcescu.licenta.game.*
@@ -113,6 +115,34 @@ class QuestionFragment : Fragment() {
             }
         }
 
+        binding.returnGameButton.setOnClickListener {
+            viewModel.restartRoom(
+                onSuccess = {
+                    view?.findNavController()?.navigate(
+                        QuestionFragmentDirections.actionQuestionFragmentToGameFragment(viewModel.gameRoom.value!!)
+                    )
+                },
+                onFailure = {
+                    view?.findNavController()?.navigate(
+                        QuestionFragmentDirections.actionQuestionFragmentToHomeFragment()
+                    )
+                }
+            )
+        }
+
+        val backButtonCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                viewModel.currentUser.observe(viewLifecycleOwner) {
+                    viewModel.leaveRoom()
+                }
+                view?.findNavController()?.navigate(
+                    QuestionFragmentDirections.actionQuestionFragmentToHomeFragment()
+                )
+            }
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, backButtonCallback)
+
         return binding.root
     }
 
@@ -200,8 +230,22 @@ class QuestionFragment : Fragment() {
 
                 override fun onFinish() {
                     currentQuestionIndex++
-                    Log.e("leaderboard", currentQuestionIndex.toString())
-                    playNextQuestion()
+                    if (currentQuestionIndex < questions.size) {
+                        playNextQuestion()
+                    } else {
+                        viewModel.viewModelScope.launch {
+                            binding.songView.visibility = View.GONE
+                            binding.leaderboardRecycler.visibility = View.GONE
+                            delay(500L)
+                            binding.newGameView.visibility = View.VISIBLE
+                            delay(100L)
+                            binding.winnerView.visibility = View.VISIBLE
+                            delay(500L)
+                            binding.fullLeaderboardText.visibility = View.VISIBLE
+                            binding.leaderboardRecycler.visibility = View.VISIBLE
+                            binding.returnGameButton.visibility = View.VISIBLE
+                        }
+                    }
                 }
             }
             val question = questions[currentQuestionIndex]
@@ -258,6 +302,7 @@ class QuestionFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+        viewModel.leaveRoom()
         mediaPlayer.release()
     }
 }

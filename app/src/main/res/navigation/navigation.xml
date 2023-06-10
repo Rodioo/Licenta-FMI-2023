@@ -61,5 +61,11 @@
         <argument
             android:name="gameRoom"
             app:argType="com.antoniofalcescu.licenta.game.GameRoom" />
+        <action
+            android:id="@+id/action_questionFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/action_questionFragment_to_gameFragment"
+            app:destination="@id/gameFragment" />
     </fragment>
 </navigation>

@@ -208,9 +208,10 @@
                 <LinearLayout
                     android:id="@+id/song_view"
                     android:layout_height="wrap_content"
-                    android:layout_width="wrap_content"
+                    android:layout_width="@dimen/track_image_size"
                     android:orientation="vertical"
-                    android:layout_gravity="center_horizontal">
+                    android:layout_gravity="center_horizontal"
+                    android:visibility="visible">
 
                     <ImageView
                         android:layout_width="match_parent"
@@ -228,6 +229,56 @@
                         android:layout_marginStart="@dimen/small_margin" />
                 </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/new_game_view"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_gravity="center_horizontal"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/the_winner_is"
+                        android:textSize="@dimen/medium_text"
+                        android:gravity="center" />
+
+                    <LinearLayout
+                        android:id="@+id/winner_view"
+                        android:layout_height="wrap_content"
+                        android:layout_width="match_parent"
+                        android:orientation="vertical"
+                        android:layout_gravity="center_horizontal"
+                        android:visibility="visible">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/track_image_size"
+                            app:roundedImageUrl="@{viewModel.leaderboardZipped[0].first.image_url}"
+                            tools:srcCompat="@drawable/loading_animation" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@{viewModel.leaderboardZipped[0].first.name}"
+                            android:textSize="@dimen/big_text"
+                            android:gravity="center"
+                            android:layout_marginTop="@dimen/extra_small_margin"
+                            android:layout_marginStart="@dimen/small_margin" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/full_leaderboard_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/this_is_the_final_leaderboard"
+                        android:textSize="@dimen/medium_text"
+                        android:gravity="center"
+                        android:layout_marginTop="@dimen/small_margin"/>
+
+                </LinearLayout>
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/leaderboard_recycler"
                     android:layout_width="match_parent"
@@ -236,6 +287,17 @@
                     android:orientation="vertical"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     app:leaderboardList="@{viewModel.leaderboardZipped}" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/return_game_button"
+                    style="@style/button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="@dimen/medium_margin"
+                    android:text="Return to Game Room"
+                    android:textAllCaps="true"
+                    android:visibility="gone" />
 
             </LinearLayout>
         </ScrollView>

@@ -253,8 +253,7 @@ class HomeViewModel(application: Application): AndroidViewModel(application) {
                     try {
                         val joinRoomResult = joinRoomDeferred.await()
                         if (joinRoomResult == null) {
-                            _error.value = "The room does not exist"
-
+                            _error.value = "The room does not exist or a game is in progress"
                         } else {
                             _gameRoom.value = joinRoomResult
                         }

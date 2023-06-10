@@ -41,4 +41,6 @@
     <string name="please_wait_while_we_load_the_songs">Please wait while we load the songs</string>
     <string name="game_will_start">Game will start in</string>
     <string name="please_wait_for_everybody_to_finish_guessing">Please wait for everybody to finish guessing</string>
+    <string name="this_is_the_final_leaderboard">This is the final leaderboard</string>
+    <string name="the_winner_is">The winner is...</string>
 </resources>
