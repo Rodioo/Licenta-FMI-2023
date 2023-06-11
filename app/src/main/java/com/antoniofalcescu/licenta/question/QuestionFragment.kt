@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -116,6 +117,26 @@ class QuestionFragment : Fragment() {
         }
 
         binding.returnGameButton.setOnClickListener {
+            viewModel.restartRoom(
+                onSuccess = {
+                    view?.findNavController()?.navigate(
+                        QuestionFragmentDirections.actionQuestionFragmentToGameFragment(viewModel.gameRoom.value!!)
+                    )
+                },
+                onFailure = {
+                    view?.findNavController()?.navigate(
+                        QuestionFragmentDirections.actionQuestionFragmentToHomeFragment()
+                    )
+                }
+            )
+        }
+
+        viewModel.error.observe(viewLifecycleOwner) { error ->
+            Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+        }
+
+        viewModel.criticalError.observe(viewLifecycleOwner) { criticalError ->
+            Toast.makeText(requireContext(), criticalError, Toast.LENGTH_LONG).show()
             viewModel.restartRoom(
                 onSuccess = {
                     view?.findNavController()?.navigate(

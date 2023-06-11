@@ -51,6 +51,10 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
     val error: LiveData<String>
         get() = _error
 
+    private val _criticalError = MutableLiveData<String>()
+    val criticalError: LiveData<String>
+        get() = _criticalError
+
     init {
 
         accessTokenDao = LocalDatabase.getInstance(application).accessTokenDao
@@ -95,7 +99,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
 
     private fun getCurrentUserTopTracks() {
         coroutineScope.launch {
-            val response = GuessifyApi.retrofitService.getCurrentUserTopTracks("Bearer ${accessToken!!.value}")
+            val response = GuessifyApi.retrofitService.getCurrentUserTopTracks("Bearer ${accessToken!!.value}", limit = 20)
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Log.e("getCurrentUserTopTracks_SUCCESS", response.body().toString())
@@ -110,7 +114,7 @@ class ProfileViewModel(application: Application): AndroidViewModel(application) 
 
     private fun getCurrentUserTopArtists() {
         coroutineScope.launch {
-            val response = GuessifyApi.retrofitService.getCurrentUserTopArtists("Bearer ${accessToken!!.value}")
+            val response = GuessifyApi.retrofitService.getCurrentUserTopArtists("Bearer ${accessToken!!.value}", limit = 20)
             withContext(Dispatchers.Main) {
                 if (response.isSuccessful) {
                     Log.e("getCurrentUserTopArtists_SUCCESS", response.body().toString())

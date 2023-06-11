@@ -89,7 +89,7 @@ class DiscoverViewModel(application: Application): AndroidViewModel(application)
         coroutineScope.launch {
             val response = if (basedOnTracks) {
                 val shuffledItems = _track.value!!.items.shuffled().take(3)
-                shuffledTracks.value = Track(items= shuffledItems)
+                shuffledTracks.value = Track(items= shuffledItems.toMutableList())
                 val tracksId = shuffledTracks.value?.items?.shuffled()?.take(3)?.joinToString(",") { it.id }
                 GuessifyApi.retrofitService.getCurrentUserRecommendations(
                     "Bearer ${accessToken.value}",

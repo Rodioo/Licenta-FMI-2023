@@ -13,6 +13,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
 import com.antoniofalcescu.licenta.databinding.FragmentDiscoverBinding
 import com.antoniofalcescu.licenta.profile.artists.ArtistsAdapter
+import com.antoniofalcescu.licenta.profile.tracks.TrackItem
 import com.antoniofalcescu.licenta.profile.tracks.TracksAdapter
 import com.antoniofalcescu.licenta.utils.Orientation
 import com.antoniofalcescu.licenta.utils.RecyclerViewSpacing
@@ -56,7 +57,7 @@ class DiscoverFragment : Fragment() {
             RecyclerViewSpacing(requireContext().getSpacing(Spacing.EXTRA_LARGE), Orientation.HORIZONTAL)
         )
         viewModel.shuffledTracks.observe(viewLifecycleOwner) {
-                shuffledTracks -> tracksAdapter.submitList(shuffledTracks.items)
+                shuffledTracks -> tracksAdapter.submitList(shuffledTracks.items as List<TrackItem?>?)
         }
 
         artistsAdapter = ArtistsAdapter {

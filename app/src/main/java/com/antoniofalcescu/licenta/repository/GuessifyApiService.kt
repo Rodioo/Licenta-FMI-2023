@@ -43,12 +43,14 @@ interface GuessifyApiService {
     suspend fun getCurrentUserTopTracks(
         @Header("Authorization") accessToken: String,
         @Query("time_range") timeRange: String = "short_term",
+        @Query("limit") limit: Int = 50,
     ): Response<Track>
 
     @GET(value= "me/top/artists")
     suspend fun getCurrentUserTopArtists(
         @Header("Authorization") accessToken: String,
         @Query("time_range") timeRange: String = "short_term",
+        @Query("limit") limit: Int = 40
     ): Response<Artist>
 
     @GET(value= "me/player/recently-played")
@@ -69,7 +71,7 @@ interface GuessifyApiService {
         @Query("seed_artists") artistsId: String = "",
         @Query("seed_tracks") tracksId: String = "",
         @Query("seed_genres") genres: String = "",
-        @Query("min_popularity") minPopularity: Int = 50,
+        @Query("min_popularity") minPopularity: Int = 65,
         @Query("limit") limit: Int = 1
     ): Response<DiscoverTrack>
 

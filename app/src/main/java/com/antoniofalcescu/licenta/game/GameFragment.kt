@@ -64,7 +64,9 @@ class GameFragment : Fragment() {
             RecyclerViewSpacing(requireContext().getSpacing(Spacing.MEDIUM), Orientation.VERTICAL, true)
         )
         viewModel.users.observe(viewLifecycleOwner) {users ->
-            usersAdapter.submitList(users)
+            if (::usersAdapter.isInitialized) {
+                usersAdapter.submitList(users)
+            }
         }
 
         viewModel.userIds.observe(viewLifecycleOwner) {userIds ->

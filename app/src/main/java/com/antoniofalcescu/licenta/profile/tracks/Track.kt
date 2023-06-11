@@ -4,7 +4,7 @@ import com.antoniofalcescu.licenta.utils.SpotifyImage
 import com.antoniofalcescu.licenta.utils.SpotifyUrl
 
 data class Track(
-    val items: List<TrackItem>
+    val items: MutableList<TrackItem>
 )
 
 data class TrackItem(

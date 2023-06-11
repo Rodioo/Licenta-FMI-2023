@@ -15,7 +15,6 @@ import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.AccessTok
 import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.AccessTokenDao
 import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.getAccessToken
 import com.antoniofalcescu.licenta.repository.roomDatabase.accessToken.updateToken
-import com.antoniofalcescu.licenta.repository.roomDatabase.gameRoom.insertLastRoom
 import com.antoniofalcescu.licenta.utils.EMPTY_PROFILE_IMAGE_URL
 import kotlinx.coroutines.*
 
@@ -34,6 +33,10 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
     private val _error = MutableLiveData<String>()
     val error: LiveData<String>
         get() = _error
+
+    private val _criticalError = MutableLiveData<String>()
+    val criticalError: LiveData<String>
+        get() = _criticalError
 
     private val _currentUser = MutableLiveData<User?>()
     val currentUser: LiveData<User?>
@@ -71,6 +74,10 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
     val everybodyAnswered: LiveData<Boolean>
         get() = _everybodyAnswered
 
+//    private val _trackIds = MutableLiveData<MutableList<String>>(mutableListOf())
+//    val trackIds: LiveData<MutableList<String>>
+//        get() = _trackIds
+
     init {
         firebase = Firebase(application)
 
@@ -83,8 +90,10 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
 
             _currentUser.value = getCurrentUserAsync().await()
 
-            if (_currentUser.value?.id_spotify == _gameRoom.value?.users?.get(0)) {
-                insertQuestions()
+            getUsersProfiles {
+                if (_currentUser.value?.id_spotify == _gameRoom.value?.users?.get(0)) {
+                    insertQuestions()
+                }
             }
 
             if (_gameQuestions.value != null) {
@@ -133,7 +142,7 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
         }
     }
 
-    private fun getUsersProfiles() {
+    private fun getUsersProfiles(completion: () -> Unit) {
         val usersAux = mutableListOf<User>()
         coroutineScope.launch {
             if (_gameRoom.value != null) {
@@ -153,7 +162,7 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                 }
             }
             _users.value = usersAux
-            Log.e("useri", _users.value.toString())
+            completion()
         }
     }
 
@@ -164,14 +173,15 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                 try {
                     val getRoomResult = getRoomDeferred.await()
                     if (getRoomResult == null) {
-                        _error.value = getRoomDeferred.getCompletionExceptionOrNull()?.message
+                        _criticalError.value = getRoomDeferred.getCompletionExceptionOrNull()?.message
                     } else {
                         _gameRoom.value = getRoomResult
-                        getUsersProfiles()
-                        checkIfEverybodyAnswered(getRoomResult)
+                        getUsersProfiles{
+                            checkIfEverybodyAnswered(getRoomResult)
+                        }
                     }
                 } catch (exception: Exception) {
-                    _error.value = exception.message
+                    _criticalError.value = exception.message
                 }
             }
         }
@@ -228,16 +238,93 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
         }
     }
 
+    private fun getUsersTopTracksAsync(): Deferred<List<String>>{
+        return coroutineScope.async {
+            val trackIds = mutableListOf<String>()
+            if (_users.value != null) {
+                val numberOfTracksPerUser = 4 / _users.value!!.size
+                for (user in _users.value!!) {
+                    if (user != null) {
+                        val response = GuessifyApi.retrofitService.getCurrentUserTopTracks(
+                            "Bearer ${user.token}",
+                            limit = 20
+                        )
+                        withContext(Dispatchers.Main) {
+                            if (response.isSuccessful) {
+                                if (response.body() != null) {
+                                    response.body()!!.items.shuffled().take(numberOfTracksPerUser).map{trackIds.add(it.id)}
+                                } else {
+                                    Log.e("getCurrentUserTopTracks_GAME_FAILURE", "response body is null")
+                                }
+                            } else {
+                                _criticalError.value = "Failed to get top songs"
+                                Log.e("getCurrentUserTopTracks_GAME_FAILURE", response.code().toString())
+                                Log.e("getCurrentUserTopTracks_GAME_FAILURE", response.errorBody().toString())
+                            }
+                        }
+                    }
+                }
+            }
+            if (trackIds.isEmpty()) {
+                _criticalError.value = "Failed to get top songs"
+            }
+            return@async trackIds
+        }
+    }
+
+    private fun getUsersTopArtistsAsync(): Deferred<List<String>>{
+        return coroutineScope.async {
+            val artistIds = mutableListOf<String>()
+            if (_users.value != null) {
+                val numberOfArtistsPerUser = 4 / _users.value!!.size
+                for (user in _users.value!!) {
+                    if (user != null) {
+                        val response = GuessifyApi.retrofitService.getCurrentUserTopArtists(
+                            "Bearer ${user.token}",
+                            limit = 20
+                        )
+                        withContext(Dispatchers.Main) {
+                            if (response.isSuccessful) {
+                                if (response.body() != null) {
+                                    response.body()!!.items.shuffled().take(numberOfArtistsPerUser).map{artistIds.add(it.id)}
+                                } else {
+                                    Log.e("getCurrentUserTopArtists_GAME_FAILURE", "response body is null")
+                                }
+                            } else {
+                                _criticalError.value = "Failed to get top artists"
+                                Log.e("getCurrentUserTopArtists_GAME_FAILURE", response.code().toString())
+                                Log.e("getCurrentUserTopArtists_GAME_FAILURE", response.errorBody().toString())
+                            }
+                        }
+                    }
+                }
+            }
+            if (artistIds.isEmpty()) {
+                _criticalError.value = "Failed to get top artists"
+            }
+            return@async artistIds
+        }
+    }
 
     private fun insertQuestions() {
         coroutineScope.launch {
             if (_gameRoom.value != null) {
-                val response = when (_gameRoom.value!!.gamemode) {
+               val response = when (_gameRoom.value!!.gamemode) {
                     application.resources.getString(R.string.most_listened_songs) -> {
-                        return@launch
+                        val trackIds = getUsersTopTracksAsync().await()
+                        GuessifyApi.retrofitService.getCurrentUserRecommendations(
+                                "Bearer ${accessToken!!.value}",
+                                tracksId = trackIds.joinToString(","),
+                                limit = 30
+                        )
                     }
                     application.resources.getString(R.string.most_listened_artists) -> {
-                        return@launch
+                        val artistIds = getUsersTopArtistsAsync().await()
+                        GuessifyApi.retrofitService.getCurrentUserRecommendations(
+                            "Bearer ${accessToken!!.value}",
+                            artistsId = artistIds.joinToString(","),
+                            limit = 30
+                        )
                     }
                     else -> {
                         GuessifyApi.retrofitService.getCurrentUserRecommendations(
@@ -251,7 +338,7 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                     if (response.isSuccessful) {
                         if (response.body() != null) {
                             Log.e("getQuestionTracks_SUCCESS", response.body().toString())
-                            val questionsAux = mutableListOf<Question>()
+                            var questionsAux = mutableListOf<Question>()
                             response.body()!!.tracks.map {track ->
                                 if (!track.preview_url.isNullOrBlank() && questionsAux.size < NUMBER_OF_SONGS) {
                                     val incorrectAnswers = getIncorrectQuestionAnswers(track.id)
@@ -265,9 +352,10 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                                     questionsAux.add(question)
                                 }
                             }
+                            questionsAux = questionsAux.shuffled().toMutableList()
                             addQuestions(questionsAux)
                         } else {
-                            _error.value = "Failed to get questions"
+                            _criticalError.value = "Failed to get questions"
                             Log.e("getQuestionTracks_FAILURE", "Response body is null")
                         }
                     } else {
@@ -281,11 +369,11 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
 
     private fun addQuestions(questions: List<Question>) {
         coroutineScope.launch {
-            val addQuestionsDeferred = firebase.addQuestions(questions)
+            val addQuestionsDeferred = firebase.addQuestions(questions.shuffled())
             try {
                 val addQuestionsResult = addQuestionsDeferred.await()
                 if (!addQuestionsResult) {
-                    _error.value = addQuestionsDeferred.getCompletionExceptionOrNull()?.message
+                    _criticalError.value = addQuestionsDeferred.getCompletionExceptionOrNull()?.message
                 } else {
                     if (_gameRoom.value != null) {
                         val addQuestionsToRoomDeferred = firebase.addQuestionsToRoom(
@@ -295,18 +383,18 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                         try {
                             val addQuestionsToRoomResult = addQuestionsToRoomDeferred.await()
                             if (addQuestionsToRoomResult == null) {
-                                _error.value = addQuestionsToRoomDeferred.getCompletionExceptionOrNull()?.message
+                                _criticalError.value = addQuestionsToRoomDeferred.getCompletionExceptionOrNull()?.message
                             } else {
                                 _gameRoom.value = addQuestionsToRoomResult
                                 onFinishLoading()
                             }
                         } catch (exception: Exception) {
-                            _error.value = exception.message
+                            _criticalError.value = exception.message
                         }
                     }
                 }
             } catch (exception: Exception) {
-                _error.value = exception.message
+                _criticalError.value = exception.message
             }
         }
     }
@@ -318,12 +406,12 @@ class QuestionViewModel(private val application: Application, gameRoomAux: GameR
                 try {
                     val getQuestionsFromRoomResult = getQuestionsFromRoomDeferred.await()
                     if (getQuestionsFromRoomResult.isNullOrEmpty()) {
-                        _error.value = getQuestionsFromRoomDeferred.getCompletionExceptionOrNull()?.message
+                        _criticalError.value = getQuestionsFromRoomDeferred.getCompletionExceptionOrNull()?.message
                     } else {
                         _gameQuestions.value = GameQuestions(getQuestionsFromRoomResult.sortedBy { it.id })
                     }
                 } catch (exception: Exception) {
-                    _error.value = exception.message
+                    _criticalError.value = exception.message
                 }
             }
         }

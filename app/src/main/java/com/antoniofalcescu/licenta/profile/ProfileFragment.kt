@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.antoniofalcescu.licenta.databinding.FragmentProfileBinding
 import com.antoniofalcescu.licenta.profile.artists.ArtistsAdapter
 import com.antoniofalcescu.licenta.profile.recentlyPlayedTracks.RecentlyPlayedAdapter
+import com.antoniofalcescu.licenta.profile.tracks.TrackItem
 import com.antoniofalcescu.licenta.profile.tracks.TracksAdapter
 import com.antoniofalcescu.licenta.utils.Orientation
 import com.antoniofalcescu.licenta.utils.RecyclerViewSpacing
@@ -48,7 +49,7 @@ class ProfileFragment : Fragment() {
             RecyclerViewSpacing(requireContext().getSpacing(Spacing.SMALL), Orientation.HORIZONTAL)
         )
         viewModel.track.observe(viewLifecycleOwner) {
-                track -> tracksAdapter.submitList(track.items)
+                track -> tracksAdapter.submitList(track.items as List<TrackItem?>?)
         }
 
         artistsAdapter = ArtistsAdapter() {
